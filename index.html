@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNB STORE | Gestão Completa</title>
+    <title>DNB STORE | Gestão & Atendimento</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root {
@@ -13,109 +13,109 @@
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); padding: 20px; display: flex; flex-direction: column; align-items: center; margin: 0; }
         .container { width: 100%; max-width: 650px; }
         
-        .tabs { display: flex; gap: 8px; margin-bottom: 15px; width: 100%; }
-        .tab-btn { flex: 1; padding: 12px; background: var(--card); border: 1px solid #2d3748; color: #94a3b8; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.8rem; }
+        .tabs { display: flex; gap: 5px; margin-bottom: 15px; width: 100%; overflow-x: auto; padding-bottom: 5px; }
+        .tab-btn { flex: 1; padding: 10px; background: var(--card); border: 1px solid #2d3748; color: #94a3b8; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.75rem; white-space: nowrap; }
         .tab-btn.active { background: var(--primary); color: white; }
 
         .card { background: var(--card); padding: 20px; border-radius: 16px; border: 1px solid #2d3748; margin-bottom: 15px; }
         .content-section { display: none; }
         .content-section.active { display: block; }
 
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-        label { display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 4px; }
-        input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #2d3748; background: #0a0f1e; color: white; box-sizing: border-box; }
-        
+        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; display: inline-block; margin-bottom: 10px; }
+        .open { background: rgba(34, 197, 94, 0.2); color: var(--success); border: 1px solid var(--success); }
+        .closed { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); }
+
+        input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #2d3748; background: #0a0f1e; color: white; box-sizing: border-box; margin-bottom: 10px; }
         .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; }
         .btn-success { background: var(--success); color: white; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-purple { background: var(--purple); color: white; }
+        .btn-outline { background: transparent; border: 1px solid #2d3748; color: #94a3b8; font-size: 0.8rem; }
 
-        .caixa-box { background: #1e293b; border: 1px solid var(--primary); padding: 15px; border-radius: 12px; margin-bottom: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center; }
-        
-        .simulacao-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #2d3748; font-size: 0.9rem; }
-        .val-destaque { color: var(--success); font-weight: bold; }
-
-        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 10px; }
-        th { text-align: left; color: #94a3b8; padding: 8px; border-bottom: 1px solid #2d3748; }
-        td { padding: 8px; border-bottom: 1px solid #1a202c; }
-
-        @media print { body * { visibility: hidden; } #pdfLayout, #pdfLayout * { visibility: visible; } #pdfLayout { display: block !important; position: absolute; left: 0; top: 0; width: 100%; color: black !important; } }
+        .msg-box { background: #0a0f1e; padding: 15px; border-radius: 8px; border: 1px dotted #3b82f6; margin-bottom: 10px; position: relative; }
+        .msg-text { font-size: 0.85rem; color: #cbd5e1; line-height: 1.4; }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <div id="statusLoja" class="status-badge">Verificando horário...</div>
+
     <div class="tabs">
         <button class="tab-btn active" onclick="openTab('vendas')">🛒 PDV</button>
         <button class="tab-btn" onclick="openTab('simula')">🧮 Simulação</button>
+        <button class="tab-btn" onclick="openTab('mensagens')">📢 Mensagens</button>
         <button class="tab-btn" onclick="openTab('busca')">🔍 Auditoria</button>
         <button class="tab-btn" onclick="openTab('config')">⚙️ Ajustes</button>
     </div>
 
     <div id="vendas" class="content-section active">
         <div class="card">
-            <h2 style="margin:0 0 15px 0; color:var(--primary);">DNB STORE</h2>
-            <div class="grid">
-                <div><label>Cliente (@)</label><input type="text" id="nomeCliente" placeholder="Ex: @Marcos"></div>
-                <div><label>Qtd Robux</label><input type="number" id="qtdRobux" oninput="calcularPDV()"></div>
+            <h2 style="margin:0; color:var(--primary);">DNB STORE</h2>
+            <label style="font-size: 0.7rem; color: #94a3b8;">Cliente e Quantidade</label>
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="nomeCliente" placeholder="@Cliente">
+                <input type="number" id="qtdRobux" placeholder="Qtd" oninput="calcPDV()">
             </div>
-            <div id="taxRobloxPDV" style="background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; padding: 10px; border-radius: 8px; margin-bottom: 10px; text-align: center; color: #f59e0b; font-weight: bold; font-size: 0.8rem;">Gamepass Sugerida: 0</div>
-            <select id="vendedor" style="margin-bottom: 10px;"><option value="João">Vendedor: João</option><option value="Sócio">Vendedor: Sócio</option></select>
             <button class="btn btn-success" onclick="salvarVenda()">💾 SALVAR E COPIAR RECIBO</button>
-        </div>
-
-        <div class="caixa-box">
-            <div style="grid-column: span 2;"><span style="font-size: 0.7rem; color: #94a3b8;">LUCRO LÍQUIDO ACUMULADO</span><br><span id="lucroTotal" style="color: var(--success); font-size: 1.5rem; font-weight: bold;">R$ 0,00</span></div>
-            <div><span style="font-size: 0.7rem; color: #94a3b8;">JOÃO (50%)</span><br><span id="lJoao" style="color:var(--primary); font-weight:bold;">R$ 0,00</span></div>
-            <div><span style="font-size: 0.7rem; color: #94a3b8;">SÓCIO (50%)</span><br><span id="lSocio" style="color:var(--primary); font-weight:bold;">R$ 0,00</span></div>
         </div>
     </div>
 
     <div id="simula" class="content-section">
         <div class="card">
-            <h3 style="color:var(--purple);">Calculadora de Orçamento</h3>
-            <label>Quantidade de Robux desejada:</label>
-            <input type="number" id="simQtd" placeholder="Ex: 1000" oninput="realizarSimulacao()">
-            
-            <div style="margin-top:20px;">
-                <div class="simulacao-item"><span>Custo Fornecedor (0,0335):</span><span id="simCusto">R$ 0,00</span></div>
-                <div class="simulacao-item"><span>Preço para o Cliente (0,0480):</span><span id="simVenda" class="val-destaque">R$ 0,00</span></div>
-                <div class="simulacao-item"><span>Lucro Total Bruto:</span><span id="simLucro" style="color:var(--success)">R$ 0,00</span></div>
-                <div class="simulacao-item" style="border:none; background:rgba(59,130,246,0.1); padding:10px; border-radius:8px; margin-top:10px;">
-                    <span>Divisão (50% João / 50% Sócio):</span>
-                    <span id="simDivisao" style="font-weight:bold; color:var(--primary);">R$ 0,00 cada</span>
-                </div>
+            <h3>🧮 Calculadora de Lucro</h3>
+            <input type="number" id="simQtd" placeholder="Qtd Robux" oninput="realizarSimulacao()">
+            <div id="resSimula" style="font-size: 0.9rem; background: #0a0f1e; padding: 15px; border-radius: 10px;">
+                <p>Custo (Fornecedor): <span id="sCusto">R$ 0,00</span></p>
+                <p>Venda (Cliente): <span id="sVenda" style="color:var(--success); font-weight:bold;">R$ 0,00</span></p>
+                <hr style="border:0; border-top:1px solid #2d3748;">
+                <p>Lucro Total: <span id="sLucro">R$ 0,00</span></p>
+                <p>Sua Parte (50%): <span id="sJoao" style="color:var(--primary);">R$ 0,00</span></p>
+                <p>Parte Sócio (50%): <span id="sSocio" style="color:var(--primary);">R$ 0,00</span></p>
             </div>
-            <button class="btn btn-purple" onclick="copiarOrcamento()">📋 Copiar Orçamento p/ Cliente</button>
+            <button class="btn btn-purple" onclick="copiarOrcamento()">📋 Copiar Orçamento</button>
         </div>
     </div>
 
-    <div id="busca" class="content-section">
+    <div id="mensagens" class="content-section">
         <div class="card">
-            <h3>Rastrear Protocolo</h3>
-            <input type="text" id="inputBusca" placeholder="DNB-XXXXXX" oninput="buscar()">
-            <div id="areaBusca" style="display:none; margin-top:15px;">
-                <div id="detalhesBusca" style="font-size:0.85rem; margin-bottom:15px;"></div>
-                <button class="btn btn-primary" onclick="imprimir('empresa')">📄 PDF Auditoria</button>
-                <button class="btn btn-warning" onclick="imprimir('cliente')">👤 PDF Cliente</button>
+            <h3>📢 Respostas Rápidas</h3>
+            
+            <div class="msg-box">
+                <div class="msg-text"><strong>🌙 Horário Fechado:</strong><br>Olá! A DNB STORE recebeu seu pedido. No momento nosso setor de entregas está pausado. Retornaremos às <span class="h-abre">08:00</span> para processar seu envio!</div>
+                <button class="btn btn-outline" onclick="copiarTextoMsg('fechado')">Copiar Aviso</button>
+            </div>
+
+            <div class="msg-box">
+                <div class="msg-text"><strong>🎮 Como Comprar:</strong><br>Para receber, você precisa criar uma Gamepass no valor sugerido. Aceitamos PIX. O prazo de 'pendente' no Roblox é de 3 a 7 dias.</div>
+                <button class="btn btn-outline" onclick="copiarTextoMsg('como')">Copiar Instrução</button>
+            </div>
+
+            <div class="msg-box">
+                <div class="msg-text"><strong>✅ Confirmação:</strong><br>Pagamento aprovado! Seus Robux já foram enviados. Confira seu histórico de pendentes no site oficial do Roblox.</div>
+                <button class="btn btn-outline" onclick="copiarTextoMsg('confirma')">Copiar Sucesso</button>
             </div>
         </div>
     </div>
 
     <div id="config" class="content-section">
         <div class="card">
-            <h3>Ajuste de Taxas</h3>
-            <label>Custo Unitário (Forn):</label><input type="number" id="confCusto" value="0.0335" step="0.0001">
-            <label>Venda Unitária (Loja):</label><input type="number" id="confVenda" value="0.0480" step="0.0001">
+            <h3>⚙️ Configurações</h3>
+            <label>Horário de Início (Ex: 08):</label>
+            <input type="number" id="hInicio" value="8">
+            <label>Horário de Término (Ex: 22):</label>
+            <input type="number" id="hFim" value="22">
+            <hr>
+            <label>Custo Unitário:</label><input type="number" id="confCusto" value="0.0335" step="0.0001">
+            <label>Venda Unitária:</label><input type="number" id="confVenda" value="0.0480" step="0.0001">
         </div>
-        <button class="btn btn-primary" onclick="alert('Configurações aplicadas!')">✅ Salvar Taxas</button>
+        <button class="btn btn-primary" onclick="atualizarStatus()">💾 Salvar e Aplicar</button>
     </div>
+
+    <div id="busca" class="content-section"> </div>
 </div>
 
 <script>
-    let vLocal = null;
-    let prot = "";
-
     function openTab(id) {
         document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -123,86 +123,63 @@
         event.currentTarget.classList.add('active');
     }
 
-    // LÓGICA DA SIMULAÇÃO
+    function atualizarStatus() {
+        const agora = new Date().getHours();
+        const inicio = parseInt(document.getElementById('hInicio').value);
+        const fim = parseInt(document.getElementById('hFim').value);
+        const status = document.getElementById('statusLoja');
+        
+        document.querySelectorAll('.h-abre').forEach(el => el.innerText = inicio + ":00");
+
+        if (agora >= inicio && agora < fim) {
+            status.innerText = "● LOJA ABERTA (ENTREGAS ATIVAS)";
+            status.className = "status-badge open";
+        } else {
+            status.innerText = "● LOJA FECHADA (APENAS PAGAMENTOS)";
+            status.className = "status-badge closed";
+        }
+    }
+
     function realizarSimulacao() {
         const qtd = parseFloat(document.getElementById('simQtd').value) || 0;
-        const cUnit = parseFloat(document.getElementById('confCusto').value);
-        const vUnit = parseFloat(document.getElementById('confVenda').value);
+        const cU = parseFloat(document.getElementById('confCusto').value);
+        const vU = parseFloat(document.getElementById('confVenda').value);
+        const cT = qtd * cU; const vT = qtd * vU; const lT = vT - cT;
 
-        const custo = (qtd * cUnit);
-        const venda = (qtd * vUnit);
-        const lucro = venda - custo;
-
-        document.getElementById('simCusto').innerText = `R$ ${custo.toFixed(2)}`;
-        document.getElementById('simVenda').innerText = `R$ ${venda.toFixed(2)}`;
-        document.getElementById('simLucro').innerText = `R$ ${lucro.toFixed(2)}`;
-        document.getElementById('simDivisao').innerText = `R$ ${(lucro/2).toFixed(2)} cada`;
+        document.getElementById('sCusto').innerText = "R$ " + cT.toFixed(2);
+        document.getElementById('sVenda').innerText = "R$ " + vT.toFixed(2);
+        document.getElementById('sLucro').innerText = "R$ " + lT.toFixed(2);
+        document.getElementById('sJoao').innerText = "R$ " + (lT/2).toFixed(2);
+        document.getElementById('sSocio').innerText = "R$ " + (lT/2).toFixed(2);
     }
 
-    function copiarOrcamento() {
-        const qtd = document.getElementById('simQtd').value;
-        const valor = document.getElementById('simVenda').innerText;
-        if(!qtd) return alert("Insira uma quantidade!");
-        const texto = `💎 *DNB STORE - ORÇAMENTO*\n\n📦 *PRODUTO:* ${qtd} Robux\n💰 *VALOR:* ${valor}\n\n✅ *Garantia de entrega e suporte oficial.*`;
-        navigator.clipboard.writeText(texto);
-        alert("Orçamento copiado!");
-    }
-
-    // LÓGICA PDV
-    function calcularPDV() {
-        const qtd = document.getElementById('qtdRobux').value;
-        document.getElementById('taxRobloxPDV').innerText = `Gamepass Sugerida: ${Math.ceil(qtd / 0.7)} Robux`;
-        prot = "DNB-" + Math.floor(100000 + Math.random() * 900000);
+    function copiarTextoMsg(tipo) {
+        let txt = "";
+        const inicio = document.getElementById('hInicio').value;
+        if(tipo === 'fechado') txt = `🌙 *DNB STORE - AVISO*\n\nNossa loja está aberta 24/7 para pagamentos, porém nosso setor de *ENTREGA MANUAL* encerrou as atividades por hoje.\n\nSeu pedido foi registrado e será entregue prioritariamente a partir das *${inicio}:00h*. Agradecemos a preferência!`;
+        if(tipo === 'como') txt = `🎮 *COMO COMPRAR NA DNB STORE*\n\n1. Informe a quantidade de Robux.\n2. Crie uma Gamepass no valor que indicarmos.\n3. Envie o comprovante via PIX.\n4. Nós compramos sua pass e os Robux ficam pendentes na sua conta (3-7 dias).`;
+        if(tipo === 'confirma') txt = `✅ *SUCESSO!*\n\nSeu pedido foi processado. Os Robux já constam como pendentes em sua conta. Obrigado por comprar na DNB Store!`;
+        
+        navigator.clipboard.writeText(txt);
+        alert("Mensagem copiada!");
     }
 
     function salvarVenda() {
         const qtd = document.getElementById('qtdRobux').value;
         const cli = document.getElementById('nomeCliente').value || "Cliente";
-        if(!qtd) return alert("Erro: Quantidade vazia");
-
-        const custoU = parseFloat(document.getElementById('confCusto').value);
-        const vendaU = parseFloat(document.getElementById('confVenda').value);
-
-        const vTot = (qtd * vendaU).toFixed(2);
-        const lTot = (vTot - (qtd * custoU)).toFixed(2);
-
-        const venda = {
-            prot, cli, v: document.getElementById('vendedor').value,
-            qtd, vTot, lTot, cTot: (qtd * custoU).toFixed(2),
-            data: new Date().toLocaleDateString(),
-            hora: new Date().toLocaleTimeString()
-        };
-
-        let db = JSON.parse(localStorage.getItem('dnb_db')) || [];
-        db.unshift(venda);
-        localStorage.setItem('dnb_db', JSON.stringify(db));
-
-        navigator.clipboard.writeText(`💎 *DNB STORE*\n\n🆔 *PROT:* ${prot}\n👤 *CLIENTE:* ${cli}\n📦 *PRODUTO:* ${qtd} Robux\n💰 *VALOR:* R$ ${vTot}\n✅ *STATUS:* CONCLUÍDO`);
+        if(!qtd) return alert("Quantidade vazia!");
         
-        alert("Venda Salva e Recibo Copiado!");
-        render();
-        document.getElementById('qtdRobux').value = "";
-        calcularPDV();
+        const vU = parseFloat(document.getElementById('confVenda').value);
+        const vT = (qtd * vU).toFixed(2);
+        const prot = "DNB-" + Math.floor(Math.random() * 999999);
+
+        const txt = `💎 *DNB STORE - COMPROVANTE*\n\n🆔 *PROT:* ${prot}\n👤 *CLIENTE:* ${cli}\n📦 *PRODUTO:* ${qtd} Robux\n💰 *VALOR:* R$ ${vT}\n✅ *STATUS:* CONCLUÍDO`;
+        navigator.clipboard.writeText(txt);
+        alert("Venda registrada e Recibo copiado!");
     }
 
-    function render() {
-        const db = JSON.parse(localStorage.getItem('dnb_db')) || [];
-        let totalL = 0;
-        db.forEach(v => totalL += parseFloat(v.lTot));
-        document.getElementById('lucroTotal').innerText = `R$ ${totalL.toFixed(2)}`;
-        document.getElementById('lJoao').innerText = `R$ ${(totalL/2).toFixed(2)}`;
-        document.getElementById('lSocio').innerText = `R$ ${(totalL/2).toFixed(2)}`;
-    }
-
-    function buscar() {
-        const b = document.getElementById('inputBusca').value.toUpperCase();
-        const db = JSON.parse(localStorage.getItem('dnb_db')) || [];
-        vLocal = db.find(v => v.prot === b);
-        document.getElementById('areaBusca').style.display = vLocal ? "block" : "none";
-        if(vLocal) document.getElementById('detalhesBusca').innerHTML = `<b>Cliente:</b> ${vLocal.cli} | <b>Valor:</b> R$ ${vLocal.vTot}`;
-    }
-
-    render();
+    setInterval(atualizarStatus, 60000);
+    atualizarStatus();
 </script>
 </body>
 </html>
