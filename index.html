@@ -3,36 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNB STORE | Gestão Profissional</title>
+    <title>DNB STORE | Gestão & Segurança</title>
     <style>
         :root {
-            --bg: #0f172a; --card: #1e293b; --primary: #3b82f6;
-            --success: #22c55e; --text: #f8fafc; --purple: #8b5cf6; --danger: #f87171;
+            --bg: #0a0f1e; --card: #161e31; --primary: #3b82f6;
+            --success: #22c55e; --text: #f8fafc; --purple: #8b5cf6; --danger: #ef4444; --warning: #f59e0b;
         }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .container { width: 100%; max-width: 550px; }
-        .card { background: var(--card); padding: 20px; border-radius: 16px; border: 1px solid #334155; margin-bottom: 20px; position: relative; }
-        
-        h1, h2 { color: var(--primary); text-align: center; margin-top: 0; }
+        .card { background: var(--card); padding: 20px; border-radius: 16px; border: 1px solid #2d3748; margin-bottom: 20px; position: relative; }
+        h1 { color: var(--primary); text-align: center; margin-top: 0; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         label { display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 5px; }
-        input, select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; box-sizing: border-box; }
-        
-        .caixa-box { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid var(--primary); padding: 15px; border-radius: 12px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .caixa-item { text-align: center; }
-        .caixa-label { font-size: 0.7rem; color: #94a3b8; display: block; }
-        .caixa-val { font-size: 1.1rem; font-weight: bold; color: var(--primary); }
-
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        input, select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #2d3748; background: #0a0f1e; color: white; box-sizing: border-box; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-success { background: var(--success); color: white; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-danger { background: var(--danger); color: white; }
-        
+        .caixa-box { background: #1a202c; border: 1px solid var(--primary); padding: 15px; border-radius: 12px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center; }
         .history-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
-        .history-table th { text-align: left; color: #94a3b8; border-bottom: 1px solid #334155; padding: 8px; }
-        .history-table td { padding: 8px; border-bottom: 1px solid #1e293b; }
-
-        .resumo-semanal { margin-top: 20px; padding: 15px; background: rgba(139, 92, 246, 0.1); border-radius: 12px; border: 1px solid var(--purple); }
+        .history-table th { text-align: left; color: #94a3b8; border-bottom: 1px solid #2d3748; padding: 8px; }
+        .history-table td { padding: 8px; border-bottom: 1px solid #1a202c; }
+        .protocol-badge { background: #1e293b; color: var(--warning); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.7rem; }
     </style>
 </head>
 <body>
@@ -40,152 +32,136 @@
 <div class="container">
     <div class="card">
         <h1>DNB STORE 💎</h1>
+        <div class="grid">
+            <div><label>Custo Forn.</label><input type="number" id="taxaCusto" value="0.0335" step="0.0001"></div>
+            <div><label>Venda Robux</label><input type="number" id="taxaVenda" value="0.0480" step="0.0001"></div>
+        </div>
         
         <div class="grid">
-            <div>
-                <label>Custo Forn.</label>
-                <input type="number" id="taxaCusto" value="0.0335" step="0.0001">
-            </div>
-            <div>
-                <label>Venda Robux</label>
-                <input type="number" id="taxaVenda" value="0.0480" step="0.0001">
-            </div>
+            <div><label>Nome do Cliente</label><input type="text" id="nomeCliente" placeholder="@Exemplo"></div>
+            <div><label>Quantidade Robux</label><input type="number" id="qtdRobux" oninput="calcular()"></div>
         </div>
 
-        <label>Quantidade Robux</label>
-        <input type="number" id="qtdRobux" style="border: 2px solid var(--primary); font-size: 1.3rem; text-align: center;" placeholder="Ex: 1000" oninput="calcular()">
+        <div id="taxRoblox" style="background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; padding: 10px; border-radius: 8px; margin-bottom: 15px; text-align: center; color: #f59e0b; font-size: 0.9rem;">Gamepass: 0 Robux</div>
 
-        <div id="taxRoblox" style="background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; padding: 10px; border-radius: 8px; margin-top: 10px; text-align: center; color: #f59e0b; font-size: 0.9rem;">
-            Gamepass Sugerida: 0 Robux
+        <div class="grid">
+            <select id="vendedor"><option value="João">Vendedor: João</option><option value="Sócio">Vendedor: Sócio</option></select>
+            <button class="btn btn-success" style="margin-top:0" onclick="salvarVenda()">💾 Salvar Venda</button>
         </div>
-
-        <div class="grid" style="margin-top:15px;">
-            <select id="vendedor">
-                <option value="João">Vendedor: João</option>
-                <option value="Sócio">Vendedor: Sócio</option>
-            </select>
-            <button class="btn btn-success" style="margin-top:0" onclick="salvarVenda()">💾 Salvar</button>
-        </div>
-        <button class="btn btn-primary" onclick="gerarComprovanteCompleto()">📋 Comprovante Cliente</button>
+        <button class="btn btn-primary" onclick="gerarComprovante()">📋 Gerar Comprovante Profissional</button>
     </div>
 
     <div class="caixa-box">
-        <div class="caixa-item" style="grid-column: span 2;">
-            <span class="caixa-label">LUCRO TOTAL ATUAL</span>
-            <span id="totalLucroDia" class="caixa-val" style="color: var(--success); font-size: 1.5rem;">R$ 0,00</span>
-        </div>
-        <div class="caixa-item"><span class="caixa-label">PARTE JOÃO</span><span id="totalJoao" class="caixa-val">R$ 0,00</span></div>
-        <div class="caixa-item"><span class="caixa-label">PARTE SÓCIO</span><span id="totalSocio" class="caixa-val">R$ 0,00</span></div>
+        <div style="grid-column: span 2;"><span style="font-size: 0.7rem; color: #94a3b8;">LUCRO TOTAL HOJE</span><br><span id="totalLucroDia" style="color: var(--success); font-size: 1.5rem; font-weight: bold;">R$ 0,00</span></div>
+        <div><span style="font-size: 0.7rem; color: #94a3b8;">JOÃO (50%)</span><br><span id="totalJoao" style="font-weight: bold; color: var(--primary);">R$ 0,00</span></div>
+        <div><span style="font-size: 0.7rem; color: #94a3b8;">SÓCIO (50%)</span><br><span id="totalSocio" style="font-weight: bold; color: var(--primary);">R$ 0,00</span></div>
     </div>
 
     <div class="card">
         <h2>Vendas de Hoje</h2>
         <table class="history-table">
-            <thead>
-                <tr><th>Quem</th><th>Qtd</th><th>Valor</th><th>Lucro(50%)</th></tr>
-            </thead>
+            <thead><tr><th>Cliente</th><th>Qtd</th><th>Valor</th><th>Ação</th></tr></thead>
             <tbody id="listaVendas"></tbody>
         </table>
         <button class="btn btn-danger" onclick="fecharDia()">🌙 Fechar o Dia</button>
     </div>
-
-    <div class="resumo-semanal" id="sessaoSemanal" style="display:none;">
-        <h3 style="margin-top:0; color:var(--purple); font-size:0.9rem;">📅 Resumo de Dias Fechados</h3>
-        <div id="listaDiasFechados" style="font-size: 0.8rem;"></div>
-    </div>
 </div>
 
 <script>
+    let currentProtocol = "";
+    let currentHash = "";
+
     function calcular() {
         const qtd = parseFloat(document.getElementById('qtdRobux').value) || 0;
-        document.getElementById('taxRoblox').innerText = `Gamepass Sugerida: ${Math.ceil(qtd / 0.7)} Robux`;
+        document.getElementById('taxRoblox').innerText = `O cliente cria Gamepass de: ${Math.ceil(qtd / 0.7)} Robux`;
+        currentProtocol = "DNB-" + Math.floor(100000 + Math.random() * 900000);
+        currentHash = Math.random().toString(36).substring(2, 6).toUpperCase() + "-" + Math.random().toString(36).substring(2, 6).toUpperCase();
     }
 
     function salvarVenda() {
         const qtd = document.getElementById('qtdRobux').value;
-        if(!qtd) return;
+        const cliente = document.getElementById('nomeCliente').value || "Não informado";
+        if(!qtd) return alert("Insira a quantidade!");
+
         const venda = {
+            protocolo: currentProtocol,
+            hash: currentHash,
+            cliente: cliente,
             vendedor: document.getElementById('vendedor').value,
             qtd: qtd,
             valor: (qtd * parseFloat(document.getElementById('taxaVenda').value)).toFixed(2),
-            lucroIndividual: (((qtd * parseFloat(document.getElementById('taxaVenda').value)) - (qtd * parseFloat(document.getElementById('taxaCusto').value))) / 2).toFixed(2),
-            data: new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})
+            lucroIndividual: (((qtd * parseFloat(document.getElementById('taxaVenda').value)) - (qtd * parseFloat(document.getElementById('taxaCusto').value))) / 2).toFixed(2)
         };
+
         let historico = JSON.parse(localStorage.getItem('dnb_vendas')) || [];
         historico.unshift(venda);
         localStorage.setItem('dnb_vendas', JSON.stringify(historico));
         renderizar();
+        alert("Venda de " + cliente + " salva!");
     }
 
-    function gerarComprovanteCompleto() {
+    function gerarComprovante() {
         const qtd = document.getElementById('qtdRobux').value;
+        const cliente = document.getElementById('nomeCliente').value || "Cliente";
         const valor = (qtd * parseFloat(document.getElementById('taxaVenda').value)).toFixed(2);
-        if(!qtd) return alert("Calcule uma venda!");
         
-        const protocolo = Math.floor(100000 + Math.random() * 900000);
-        const texto = `💎 *DNB STORE - RECIBO OFICIAL* 💎\n\n🆔 *Protocolo:* #${protocolo}\n📅 *Data:* ${new Date().toLocaleDateString()} às ${new Date().toLocaleTimeString()}\n📦 *Produto:* ${qtd} Robux (Líquidos)\n💰 *Valor Total:* R$ ${valor}\n💳 *Método:* Pix / Saldo\n🚀 *Status:* Processado com Sucesso\n\n🛡️ _A DNB STORE garante a segurança da sua transação. Guarde este comprovante._`;
-        
+        if(!qtd) return alert("Preencha os dados primeiro!");
+        if(!currentProtocol) calcular();
+
+        const texto = `💎 *DNB STORE - COMPROVANTE OFICIAL* 💎
+------------------------------------------
+👤 *CLIENTE:* ${cliente}
+🆔 *PROTOCOLO:* ${currentProtocol}
+🔑 *AUTENTICIDADE:* ${currentHash}
+📅 *DATA:* ${new Date().toLocaleDateString()}
+⏰ *HORA:* ${new Date().toLocaleTimeString()}
+👤 *VENDEDOR:* ${document.getElementById('vendedor').value}
+
+📦 *PRODUTO:* ${qtd} Robux (Líquidos)
+💰 *VALOR TOTAL:* R$ ${valor}
+✅ *STATUS:* ENTREGUE / CONCLUÍDO
+------------------------------------------
+📜 *TERMOS E POLÍTICA DE ENTREGA:*
+O prazo para os Robux saírem de "pendente" para o seu saldo real é de *3 a 7 dias*, conforme as normas oficiais do Roblox. A DNB Store garante a entrega do produto, mas não tem poder sobre o tempo de processamento do Roblox.
+
+🛡️ _Este recibo é único e rastreável._
+🚀 *Obrigado pela preferência!*`;
+
         navigator.clipboard.writeText(texto);
-        alert("Comprovante profissional copiado!");
+        alert("Comprovante de " + cliente + " copiado!");
     }
 
     function renderizar() {
         const historico = JSON.parse(localStorage.getItem('dnb_vendas')) || [];
         const lista = document.getElementById('listaVendas');
-        let totalLucro = 0, totalJoao = 0, totalSocio = 0;
+        let totalL = 0, tJoao = 0, tSocio = 0;
 
-        lista.innerHTML = historico.map(v => {
-            const lucroInd = parseFloat(v.lucroIndividual);
-            totalLucro += (lucroInd * 2);
-            if(v.vendedor === "João") totalJoao += lucroInd; else totalSocio += lucroInd;
-            return `<tr><td>${v.vendedor}</td><td>${v.qtd}</td><td style="color:var(--success)">R$ ${v.valor}</td><td style="color:var(--purple)">R$ ${v.lucroIndividual}</td></tr>`;
+        lista.innerHTML = historico.map((v, index) => {
+            const lInd = parseFloat(v.lucroIndividual);
+            totalL += (lInd * 2);
+            if(v.vendedor === "João") tJoao += lInd; else tSocio += lInd;
+            return `<tr><td>${v.cliente}</td><td>${v.qtd}</td><td>R$ ${v.valor}</td><td><button style="color:red; background:none; border:none; cursor:pointer;" onclick="deletarVenda(${index})">×</button></td></tr>`;
         }).join('');
 
-        document.getElementById('totalLucroDia').innerText = `R$ ${totalLucro.toFixed(2)}`;
-        document.getElementById('totalJoao').innerText = `R$ ${totalJoao.toFixed(2)}`;
-        document.getElementById('totalSocio').innerText = `R$ ${totalSocio.toFixed(2)}`;
-        renderizarSemanas();
+        document.getElementById('totalLucroDia').innerText = `R$ ${totalL.toFixed(2)}`;
+        document.getElementById('totalJoao').innerText = `R$ ${tJoao.toFixed(2)}`;
+        document.getElementById('totalSocio').innerText = `R$ ${tSocio.toFixed(2)}`;
+    }
+
+    function deletarVenda(index) {
+        let historico = JSON.parse(localStorage.getItem('dnb_vendas'));
+        historico.splice(index, 1);
+        localStorage.setItem('dnb_vendas', JSON.stringify(historico));
+        renderizar();
     }
 
     function fecharDia() {
-        const historico = JSON.parse(localStorage.getItem('dnb_vendas')) || [];
-        if(historico.length === 0) return alert("Não há vendas para fechar hoje!");
-        
-        if(confirm("Deseja fechar o dia? Isso limpará a tabela de hoje e salvará o resumo semanal.")){
-            let total = 0;
-            historico.forEach(v => total += (parseFloat(v.lucroIndividual) * 2));
-            
-            const resumoDia = {
-                data: new Date().toLocaleDateString('pt-BR'),
-                lucroTotal: total.toFixed(2),
-                vendas: historico.length
-            };
-
-            let semana = JSON.parse(localStorage.getItem('dnb_semana')) || [];
-            semana.unshift(resumoDia);
-            localStorage.setItem('dnb_semana', JSON.stringify(semana));
+        if(confirm("Deseja fechar o dia e zerar o caixa?")){
             localStorage.removeItem('dnb_vendas');
             renderizar();
         }
     }
 
-    function renderizarSemanas() {
-        const semana = JSON.parse(localStorage.getItem('dnb_semana')) || [];
-        const div = document.getElementById('listaDiasFechados');
-        const sessao = document.getElementById('sessaoSemanal');
-        
-        if(semana.length > 0) {
-            sessao.style.display = "block";
-            div.innerHTML = semana.map(d => `
-                <div style="display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid rgba(255,255,255,0.1);">
-                    <span>${d.data} (${d.vendas} vendas)</span>
-                    <span style="color:var(--success)">+ R$ ${d.lucroTotal}</span>
-                </div>
-            `).join('');
-        }
-    }
-
-    function limparHistorico() { if(confirm("Zerar tudo?")) { localStorage.clear(); renderizar(); } }
     renderizar();
 </script>
 </body>
