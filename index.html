@@ -3,248 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel DNB STORE | Robux</title>
+    <title>DNB STORE | Painel Administrativo</title>
     <style>
         :root {
-            --bg: #0f172a;
-            --card: #1e293b;
-            --primary: #3b82f6;
-            --success: #22c55e;
-            --text: #f8fafc;
-            --input-bg: #0f172a;
-            --purple: #8b5cf6;
+            --bg: #0f172a; --card: #1e293b; --primary: #3b82f6;
+            --success: #22c55e; --text: #f8fafc; --purple: #8b5cf6;
         }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-        }
-
-        .calc-container {
-            background: var(--card);
-            padding: 25px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-            width: 100%;
-            max-width: 450px;
-            border: 1px solid #334155;
-        }
-
-        h1 { color: var(--primary); text-align: center; font-size: 1.6rem; margin-top: 0; }
-
-        .settings-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            background: rgba(255,255,255,0.03);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-
-        label { display: block; margin-bottom: 6px; color: #94a3b8; font-size: 0.85rem; font-weight: 600; }
-
-        input {
-            width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #475569;
-            background: var(--input-bg);
-            color: white;
-            font-size: 1rem;
-            box-sizing: border-box;
-        }
-
-        .main-input input { font-size: 1.3rem; border: 2px solid var(--primary); text-align: center; }
-
-        .results { display: grid; gap: 10px; margin-top: 20px; }
-
-        .res-item {
-            background: rgba(255,255,255,0.05);
-            padding: 12px;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .socio-box {
-            background: rgba(139, 92, 246, 0.1);
-            border: 1px dashed var(--purple);
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .socio-row { display: flex; justify-content: space-between; font-size: 0.9rem; }
-
-        .btn-save {
-            width: 100%;
-            margin-top: 15px;
-            padding: 12px;
-            background: var(--success);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .btn-save:hover { background: #16a34a; }
-
-        /* Histórico */
-        .history-container {
-            width: 100%;
-            max-width: 450px;
-            margin-top: 30px;
-            background: var(--card);
-            border-radius: 12px;
-            padding: 15px;
-            border: 1px solid #334155;
-        }
-
-        .history-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        .history-table th { color: #94a3b8; text-align: left; padding: 8px; border-bottom: 1px solid #334155; }
-        .history-table td { padding: 8px; border-bottom: 1px solid #1e293b; }
-
-        .val-final { color: var(--success); font-weight: bold; }
-        .val-lucro { color: var(--primary); font-weight: bold; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { width: 100%; max-width: 500px; }
+        .card { background: var(--card); padding: 20px; border-radius: 16px; border: 1px solid #334155; margin-bottom: 20px; }
+        h1, h2 { color: var(--primary); text-align: center; margin-top: 0; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        label { display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 5px; }
+        input, select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; box-sizing: border-box; }
+        .highlight { border: 2px solid var(--primary); font-size: 1.2rem; text-align: center; }
+        .res-item { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-top: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-purple { background: var(--purple); color: white; }
+        .history-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; margin-top: 10px; }
+        .history-table th { text-align: left; color: #94a3b8; border-bottom: 1px solid #334155; padding: 5px; }
+        .history-table td { padding: 5px; border-bottom: 1px solid #1e293b; }
+        .tax-info { background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; padding: 10px; border-radius: 8px; margin-top: 10px; text-align: center; color: #f59e0b; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="calc-container">
+<div class="container">
+    <div class="card">
         <h1>DNB STORE 💎</h1>
-
-        <div class="settings-grid">
-            <div class="input-group">
+        
+        <div class="grid">
+            <div>
                 <label>Custo Fornecedor</label>
                 <input type="number" id="taxaCusto" value="0.0335" step="0.0001" oninput="calcular()">
             </div>
-            <div class="input-group">
+            <div>
                 <label>Preço de Venda</label>
                 <input type="number" id="taxaVenda" value="0.0480" step="0.0001" oninput="calcular()">
             </div>
         </div>
 
-        <div class="input-group main-input">
-            <label style="text-align: center; font-size: 1rem; color: var(--text);">Quantidade de Robux</label>
-            <input type="number" id="qtdRobux" placeholder="Ex: 1000" oninput="calcular()">
+        <label>Quantidade de Robux (Líquido)</label>
+        <input type="number" id="qtdRobux" class="highlight" placeholder="Ex: 1000" oninput="calcular()">
+
+        <div class="tax-info" id="taxRoblox">
+            O cliente deve criar Gamepass de: 0 Robux
         </div>
 
         <div class="results">
-            <div class="res-item">
-                <span style="color: #94a3b8;">Preço para Cliente</span>
-                <span id="venda" class="val-final">R$ 0,00</span>
-            </div>
-            <div class="res-item">
-                <span style="color: #94a3b8;">Lucro Bruto Total</span>
-                <span id="lucro" class="val-lucro">R$ 0,00</span>
-            </div>
-            
-            <div class="socio-box">
-                <div class="socio-row">
-                    <span>Sua Parte (50%)</span>
-                    <span id="parteVoce" style="color: var(--purple); font-weight: bold;">R$ 0,00</span>
-                </div>
-                <div class="socio-row">
-                    <span>Sócio (50%)</span>
-                    <span id="parteSocio" style="color: var(--purple); font-weight: bold;">R$ 0,00</span>
-                </div>
-            </div>
+            <div class="res-item"><span>Preço Cliente:</span><span id="venda" style="color:var(--success); font-weight:bold;">R$ 0,00</span></div>
+            <div class="res-item"><span>Lucro Cada Sócio:</span><span id="cadaSocio" style="color:var(--purple);">R$ 0,00</span></div>
         </div>
 
-        <button class="btn-save" onclick="salvarVenda()">💾 Salvar Venda</button>
+        <label style="margin-top:15px;">Vendedor:</label>
+        <select id="vendedor">
+            <option value="João">João</option>
+            <option value="Sócio">Sócio</option>
+        </select>
+
+        <button class="btn btn-success" onclick="salvarVenda()">💾 Salvar Venda</button>
+        <button class="btn btn-primary" onclick="gerarComprovante()">📋 Gerar Comprovante</button>
     </div>
 
-    <div class="history-container">
-        <h3 style="margin-top: 0; font-size: 1rem; color: var(--primary);">Vendas Salvas (Últimas 5)</h3>
+    <div class="card">
+        <h2>Histórico Recente</h2>
         <table class="history-table">
             <thead>
                 <tr>
-                    <th>Data</th>
+                    <th>Sócio</th>
                     <th>Qtd</th>
                     <th>Venda</th>
                     <th>Lucro</th>
                 </tr>
             </thead>
-            <tbody id="listaVendas">
-                </tbody>
+            <tbody id="listaVendas"></tbody>
         </table>
-        <button onclick="limparHistorico()" style="background: none; border: none; color: #f87171; font-size: 0.7rem; cursor: pointer; margin-top: 10px;">Limpar Histórico</button>
+        <button onclick="limparHistorico()" style="background:none; border:none; color:#f87171; font-size:0.7rem; cursor:pointer; width:100%; margin-top:10px;">Limpar Tudo</button>
     </div>
+</div>
 
-    <script>
-        function calcular() {
-            const qtd = parseFloat(document.getElementById('qtdRobux').value);
-            const taxaCusto = parseFloat(document.getElementById('taxaCusto').value);
-            const taxaVenda = parseFloat(document.getElementById('taxaVenda').value);
+<script>
+    function calcular() {
+        const qtd = parseFloat(document.getElementById('qtdRobux').value) || 0;
+        const tCusto = parseFloat(document.getElementById('taxaCusto').value);
+        const tVenda = parseFloat(document.getElementById('taxaVenda').value);
 
-            if (qtd > 0) {
-                const vendaTotal = qtd * taxaVenda;
-                const lucroTotal = vendaTotal - (qtd * taxaCusto);
-                const cadaSocio = lucroTotal / 2;
+        // Preços e Lucros
+        const vendaTotal = qtd * tVenda;
+        const lucroCada = (vendaTotal - (qtd * tCusto)) / 2;
+        
+        // Taxa Roblox (Cálculo para sobrar a qtd desejada após 30% de taxa)
+        const valorGamepass = Math.ceil(qtd / 0.7);
 
-                document.getElementById('venda').innerText = `R$ ${vendaTotal.toFixed(2)}`;
-                document.getElementById('lucro').innerText = `R$ ${lucroTotal.toFixed(2)}`;
-                document.getElementById('parteVoce').innerText = `R$ ${cadaSocio.toFixed(2)}`;
-                document.getElementById('parteSocio').innerText = `R$ ${cadaSocio.toFixed(2)}`;
-            }
-        }
+        document.getElementById('venda').innerText = `R$ ${vendaTotal.toFixed(2)}`;
+        document.getElementById('cadaSocio').innerText = `R$ ${lucroCada.toFixed(2)}`;
+        document.getElementById('taxRoblox').innerText = `O cliente deve criar Gamepass de: ${valorGamepass} Robux`;
+    }
 
-        function salvarVenda() {
-            const qtd = document.getElementById('qtdRobux').value;
-            const venda = document.getElementById('venda').innerText;
-            const lucro = document.getElementById('lucro').innerText;
-            
-            if (!qtd) return alert("Calcule uma venda antes de salvar!");
+    function salvarVenda() {
+        const qtd = document.getElementById('qtdRobux').value;
+        if(!qtd) return;
 
-            const novaVenda = {
-                data: new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}),
-                qtd: qtd,
-                venda: venda,
-                lucro: lucro
-            };
+        const venda = {
+            vendedor: document.getElementById('vendedor').value,
+            qtd: qtd,
+            valor: document.getElementById('venda').innerText,
+            lucro: document.getElementById('cadaSocio').innerText,
+            data: new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})
+        };
 
-            let vendas = JSON.parse(localStorage.getItem('vendasDNB')) || [];
-            vendas.unshift(novaVenda);
-            if (vendas.length > 5) vendas.pop();
-            
-            localStorage.setItem('vendasDNB', JSON.stringify(vendas));
-            carregarHistorico();
-        }
+        let historico = JSON.parse(localStorage.getItem('dnb_vendas')) || [];
+        historico.unshift(venda);
+        if(historico.length > 10) historico.pop();
+        localStorage.setItem('dnb_vendas', JSON.stringify(historico));
+        renderizar();
+    }
 
-        function carregarHistorico() {
-            const vendas = JSON.parse(localStorage.getItem('vendasDNB')) || [];
-            const lista = document.getElementById('listaVendas');
-            lista.innerHTML = vendas.map(v => `
-                <tr>
-                    <td>${v.data}</td>
-                    <td>${v.qtd}</td>
-                    <td class="val-final">${v.venda}</td>
-                    <td class="val-lucro">${v.lucro}</td>
-                </tr>
-            `).join('');
-        }
+    function gerarComprovante() {
+        const qtd = document.getElementById('qtdRobux').value;
+        const valor = document.getElementById('venda').innerText;
+        if(!qtd) return alert("Calcule uma venda primeiro!");
 
-        function limparHistorico() {
-            localStorage.removeItem('vendasDNB');
-            carregarHistorico();
-        }
+        const texto = `💎 *DNB STORE - COMPROVANTE* 💎\n\n📅 Data: ${new Date().toLocaleDateString()}\n📦 Produto: ${qtd} Robux\n💰 Valor Pago: ${valor}\n✅ Status: Entrega Realizada\n\nObrigado pela preferência!`;
+        navigator.clipboard.writeText(texto);
+        alert("Comprovante copiado para o Discord!");
+    }
 
-        // Carrega ao abrir a página
-        carregarHistorico();
-    </script>
+    function renderizar() {
+        const historico = JSON.parse(localStorage.getItem('dnb_vendas')) || [];
+        document.getElementById('listaVendas').innerHTML = historico.map(v => `
+            <tr>
+                <td>${v.vendedor}</td>
+                <td>${v.qtd}</td>
+                <td style="color:var(--success)">${v.valor}</td>
+                <td style="color:var(--purple)">${v.lucro}</td>
+            </tr>
+        `).join('');
+    }
+
+    function limparHistorico() { localStorage.removeItem('dnb_vendas'); renderizar(); }
+    renderizar();
+</script>
 </body>
 </html>
