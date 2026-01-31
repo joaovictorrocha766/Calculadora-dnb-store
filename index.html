@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNB STORE | Sistema Profissional</title>
+    <title>DNB STORE | Gestão Completa</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root {
@@ -14,7 +14,7 @@
         .container { width: 100%; max-width: 650px; }
         
         .tabs { display: flex; gap: 8px; margin-bottom: 15px; width: 100%; }
-        .tab-btn { flex: 1; padding: 12px; background: var(--card); border: 1px solid #2d3748; color: #94a3b8; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .tab-btn { flex: 1; padding: 12px; background: var(--card); border: 1px solid #2d3748; color: #94a3b8; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.8rem; }
         .tab-btn.active { background: var(--primary); color: white; }
 
         .card { background: var(--card); padding: 20px; border-radius: 16px; border: 1px solid #2d3748; margin-bottom: 15px; }
@@ -28,21 +28,18 @@
         .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; }
         .btn-success { background: var(--success); color: white; }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-danger { background: var(--danger); color: white; margin-top: 15px; font-size: 0.7rem; }
+        .btn-purple { background: var(--purple); color: white; }
 
         .caixa-box { background: #1e293b; border: 1px solid var(--primary); padding: 15px; border-radius: 12px; margin-bottom: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center; }
         
+        .simulacao-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #2d3748; font-size: 0.9rem; }
+        .val-destaque { color: var(--success); font-weight: bold; }
+
         table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 10px; }
         th { text-align: left; color: #94a3b8; padding: 8px; border-bottom: 1px solid #2d3748; }
         td { padding: 8px; border-bottom: 1px solid #1a202c; }
 
-        /* PDF oculto */
-        #pdfLayout { display: none; background: white !important; color: black !important; padding: 40px; }
-        @media print {
-            body * { visibility: hidden; }
-            #pdfLayout, #pdfLayout * { visibility: visible; }
-            #pdfLayout { display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
-        }
+        @media print { body * { visibility: hidden; } #pdfLayout, #pdfLayout * { visibility: visible; } #pdfLayout { display: block !important; position: absolute; left: 0; top: 0; width: 100%; color: black !important; } }
     </style>
 </head>
 <body>
@@ -50,6 +47,7 @@
 <div class="container">
     <div class="tabs">
         <button class="tab-btn active" onclick="openTab('vendas')">🛒 PDV</button>
+        <button class="tab-btn" onclick="openTab('simula')">🧮 Simulação</button>
         <button class="tab-btn" onclick="openTab('busca')">🔍 Auditoria</button>
         <button class="tab-btn" onclick="openTab('config')">⚙️ Ajustes</button>
     </div>
@@ -59,12 +57,10 @@
             <h2 style="margin:0 0 15px 0; color:var(--primary);">DNB STORE</h2>
             <div class="grid">
                 <div><label>Cliente (@)</label><input type="text" id="nomeCliente" placeholder="Ex: @Marcos"></div>
-                <div><label>Qtd Robux</label><input type="number" id="qtdRobux" oninput="calcular()"></div>
+                <div><label>Qtd Robux</label><input type="number" id="qtdRobux" oninput="calcularPDV()"></div>
             </div>
-            <div id="taxRoblox" style="background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; padding: 10px; border-radius: 8px; margin-bottom: 10px; text-align: center; color: #f59e0b; font-weight: bold;">Gamepass: 0</div>
-            
+            <div id="taxRobloxPDV" style="background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; padding: 10px; border-radius: 8px; margin-bottom: 10px; text-align: center; color: #f59e0b; font-weight: bold; font-size: 0.8rem;">Gamepass Sugerida: 0</div>
             <select id="vendedor" style="margin-bottom: 10px;"><option value="João">Vendedor: João</option><option value="Sócio">Vendedor: Sócio</option></select>
-            
             <button class="btn btn-success" onclick="salvarVenda()">💾 SALVAR E COPIAR RECIBO</button>
         </div>
 
@@ -73,58 +69,52 @@
             <div><span style="font-size: 0.7rem; color: #94a3b8;">JOÃO (50%)</span><br><span id="lJoao" style="color:var(--primary); font-weight:bold;">R$ 0,00</span></div>
             <div><span style="font-size: 0.7rem; color: #94a3b8;">SÓCIO (50%)</span><br><span id="lSocio" style="color:var(--primary); font-weight:bold;">R$ 0,00</span></div>
         </div>
+    </div>
 
-        <div class="card" style="padding:10px;">
-            <h4 style="margin:5px;">Vendas Recentes</h4>
-            <table id="tabelaVendas">
-                <thead><tr><th>Protocolo</th><th>Cliente</th><th>Valor</th><th>Vendedor</th></tr></thead>
-                <tbody></tbody>
-            </table>
+    <div id="simula" class="content-section">
+        <div class="card">
+            <h3 style="color:var(--purple);">Calculadora de Orçamento</h3>
+            <label>Quantidade de Robux desejada:</label>
+            <input type="number" id="simQtd" placeholder="Ex: 1000" oninput="realizarSimulacao()">
+            
+            <div style="margin-top:20px;">
+                <div class="simulacao-item"><span>Custo Fornecedor (0,0335):</span><span id="simCusto">R$ 0,00</span></div>
+                <div class="simulacao-item"><span>Preço para o Cliente (0,0480):</span><span id="simVenda" class="val-destaque">R$ 0,00</span></div>
+                <div class="simulacao-item"><span>Lucro Total Bruto:</span><span id="simLucro" style="color:var(--success)">R$ 0,00</span></div>
+                <div class="simulacao-item" style="border:none; background:rgba(59,130,246,0.1); padding:10px; border-radius:8px; margin-top:10px;">
+                    <span>Divisão (50% João / 50% Sócio):</span>
+                    <span id="simDivisao" style="font-weight:bold; color:var(--primary);">R$ 0,00 cada</span>
+                </div>
+            </div>
+            <button class="btn btn-purple" onclick="copiarOrcamento()">📋 Copiar Orçamento p/ Cliente</button>
         </div>
     </div>
 
     <div id="busca" class="content-section">
         <div class="card">
-            <h3>Rastrear Venda</h3>
+            <h3>Rastrear Protocolo</h3>
             <input type="text" id="inputBusca" placeholder="DNB-XXXXXX" oninput="buscar()">
             <div id="areaBusca" style="display:none; margin-top:15px;">
-                <div id="detalhesBusca" style="font-size:0.85rem; margin-bottom:15px; border-left: 3px solid var(--primary); padding-left:10px;"></div>
-                <button class="btn btn-purple" onclick="imprimir('empresa')">📄 Gerar PDF Auditoria</button>
-                <button class="btn btn-warning" onclick="imprimir('cliente')">👤 Gerar PDF Cliente</button>
+                <div id="detalhesBusca" style="font-size:0.85rem; margin-bottom:15px;"></div>
+                <button class="btn btn-primary" onclick="imprimir('empresa')">📄 PDF Auditoria</button>
+                <button class="btn btn-warning" onclick="imprimir('cliente')">👤 PDF Cliente</button>
             </div>
         </div>
     </div>
 
     <div id="config" class="content-section">
         <div class="card">
-            <h3>Ajuste de Preços (Unidade)</h3>
-            <label>Custo do Fornecedor (R$ por 1 Robux)</label>
-            <input type="number" id="confCusto" value="0.0335" step="0.0001">
-            <label>Preço de Venda (R$ por 1 Robux)</label>
-            <input type="number" id="confVenda" value="0.0480" step="0.0001">
-            <p style="font-size:0.7rem; color:#94a3b8;">* Esses valores alteram o cálculo do lucro 50/50.</p>
+            <h3>Ajuste de Taxas</h3>
+            <label>Custo Unitário (Forn):</label><input type="number" id="confCusto" value="0.0335" step="0.0001">
+            <label>Venda Unitária (Loja):</label><input type="number" id="confVenda" value="0.0480" step="0.0001">
         </div>
-        <button class="btn btn-danger" onclick="localStorage.clear(); location.reload();">🗑️ RESETAR SISTEMA</button>
+        <button class="btn btn-primary" onclick="alert('Configurações aplicadas!')">✅ Salvar Taxas</button>
     </div>
-</div>
-
-<div id="pdfLayout">
-    <h2 id="pdfTit" style="text-align:center; border-bottom: 2px solid #000;"></h2>
-    <div id="pdfCorpo"></div>
-    <div id="pdfAudit" style="margin-top:20px; background:#eee; padding:10px; display:none;">
-        <h4>DIVISÃO DE LUCRO</h4>
-        <p id="pAuditData"></p>
-    </div>
-    <div style="margin-top:20px; font-size:10px; border-top:1px solid #000;">
-        <b>DNB STORE:</b> Prazo 3-7 dias (Roblox). Sem reembolsos após envio.
-    </div>
-    <div style="display:flex; justify-content:center; margin-top:20px;"><div id="qrcode"></div></div>
 </div>
 
 <script>
     let vLocal = null;
     let prot = "";
-    let hash = "";
 
     function openTab(id) {
         document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
@@ -133,11 +123,36 @@
         event.currentTarget.classList.add('active');
     }
 
-    function calcular() {
+    // LÓGICA DA SIMULAÇÃO
+    function realizarSimulacao() {
+        const qtd = parseFloat(document.getElementById('simQtd').value) || 0;
+        const cUnit = parseFloat(document.getElementById('confCusto').value);
+        const vUnit = parseFloat(document.getElementById('confVenda').value);
+
+        const custo = (qtd * cUnit);
+        const venda = (qtd * vUnit);
+        const lucro = venda - custo;
+
+        document.getElementById('simCusto').innerText = `R$ ${custo.toFixed(2)}`;
+        document.getElementById('simVenda').innerText = `R$ ${venda.toFixed(2)}`;
+        document.getElementById('simLucro').innerText = `R$ ${lucro.toFixed(2)}`;
+        document.getElementById('simDivisao').innerText = `R$ ${(lucro/2).toFixed(2)} cada`;
+    }
+
+    function copiarOrcamento() {
+        const qtd = document.getElementById('simQtd').value;
+        const valor = document.getElementById('simVenda').innerText;
+        if(!qtd) return alert("Insira uma quantidade!");
+        const texto = `💎 *DNB STORE - ORÇAMENTO*\n\n📦 *PRODUTO:* ${qtd} Robux\n💰 *VALOR:* ${valor}\n\n✅ *Garantia de entrega e suporte oficial.*`;
+        navigator.clipboard.writeText(texto);
+        alert("Orçamento copiado!");
+    }
+
+    // LÓGICA PDV
+    function calcularPDV() {
         const qtd = document.getElementById('qtdRobux').value;
-        document.getElementById('taxRoblox').innerText = `Gamepass Sugerida: ${Math.ceil(qtd / 0.7)} Robux`;
+        document.getElementById('taxRobloxPDV').innerText = `Gamepass Sugerida: ${Math.ceil(qtd / 0.7)} Robux`;
         prot = "DNB-" + Math.floor(100000 + Math.random() * 900000);
-        hash = "SIG-" + Math.random().toString(36).substring(2, 10).toUpperCase();
     }
 
     function salvarVenda() {
@@ -149,12 +164,11 @@
         const vendaU = parseFloat(document.getElementById('confVenda').value);
 
         const vTot = (qtd * vendaU).toFixed(2);
-        const cTot = (qtd * custoU).toFixed(2);
-        const lTot = (vTot - cTot).toFixed(2);
+        const lTot = (vTot - (qtd * custoU)).toFixed(2);
 
         const venda = {
-            prot, hash, cli, v: document.getElementById('vendedor').value,
-            qtd, vTot, cTot, lTot,
+            prot, cli, v: document.getElementById('vendedor').value,
+            qtd, vTot, lTot, cTot: (qtd * custoU).toFixed(2),
             data: new Date().toLocaleDateString(),
             hora: new Date().toLocaleTimeString()
         };
@@ -163,29 +177,18 @@
         db.unshift(venda);
         localStorage.setItem('dnb_db', JSON.stringify(db));
 
-        // COPIAR COMPROVANTE AUTOMÁTICO
-        const texto = `💎 *DNB STORE*\n\n🆔 *PROT:* ${prot}\n👤 *CLIENTE:* ${cli}\n📦 *PRODUTO:* ${qtd} Robux\n💰 *VALOR:* R$ ${vTot}\n✅ *STATUS:* CONCLUÍDO\n\n🛡️ _O PDF oficial pode ser solicitado ao vendedor!_`;
-        navigator.clipboard.writeText(texto);
+        navigator.clipboard.writeText(`💎 *DNB STORE*\n\n🆔 *PROT:* ${prot}\n👤 *CLIENTE:* ${cli}\n📦 *PRODUTO:* ${qtd} Robux\n💰 *VALOR:* R$ ${vTot}\n✅ *STATUS:* CONCLUÍDO`);
         
-        alert("Venda Salva! Recibo copiado para o WhatsApp.");
+        alert("Venda Salva e Recibo Copiado!");
         render();
         document.getElementById('qtdRobux').value = "";
-        calcular();
+        calcularPDV();
     }
 
     function render() {
         const db = JSON.parse(localStorage.getItem('dnb_db')) || [];
         let totalL = 0;
-        const tbody = document.querySelector("#tabelaVendas tbody");
-        tbody.innerHTML = "";
-
-        db.forEach((v, i) => {
-            if(i < 5) {
-                tbody.innerHTML += `<tr><td>${v.prot}</td><td>${v.cli}</td><td>R$ ${v.vTot}</td><td>${v.v}</td></tr>`;
-            }
-            totalL += parseFloat(v.lTot);
-        });
-
+        db.forEach(v => totalL += parseFloat(v.lTot));
         document.getElementById('lucroTotal').innerText = `R$ ${totalL.toFixed(2)}`;
         document.getElementById('lJoao').innerText = `R$ ${(totalL/2).toFixed(2)}`;
         document.getElementById('lSocio').innerText = `R$ ${(totalL/2).toFixed(2)}`;
@@ -195,43 +198,11 @@
         const b = document.getElementById('inputBusca').value.toUpperCase();
         const db = JSON.parse(localStorage.getItem('dnb_db')) || [];
         vLocal = db.find(v => v.prot === b);
-
-        if(vLocal) {
-            document.getElementById('areaBusca').style.display = "block";
-            document.getElementById('detalhesBusca').innerHTML = `<b>Cliente:</b> ${vLocal.cli}<br><b>Data:</b> ${vLocal.data}<br><b>Total:</b> R$ ${vLocal.vTot}`;
-        } else {
-            document.getElementById('areaBusca').style.display = "none";
-        }
-    }
-
-    function imprimir(tipo) {
-        document.getElementById('pdfTit').innerText = tipo === 'empresa' ? "AUDITORIA INTERNA" : "RECIBO DO CLIENTE";
-        document.getElementById('pdfAudit').style.display = tipo === 'empresa' ? "block" : "none";
-        
-        document.getElementById('pdfCorpo').innerHTML = `
-            <p><b>Protocolo:</b> ${vLocal.prot}</p>
-            <p><b>Cliente:</b> ${vLocal.cli}</p>
-            <p><b>Produto:</b> ${vLocal.qtd} Robux</p>
-            <p><b>Valor Pago:</b> R$ ${vLocal.vTot}</p>
-            <p><b>Data:</b> ${vLocal.data} - ${vLocal.hora}</p>
-        `;
-
-        if(tipo === 'empresa') {
-            document.getElementById('pAuditData').innerHTML = `
-                Lucro Bruto: R$ ${vLocal.lTot}<br>
-                <b>João: R$ ${(vLocal.lTot/2).toFixed(2)}</b><br>
-                <b>Sócio: R$ ${(vLocal.lTot/2).toFixed(2)}</b>
-            `;
-        }
-
-        document.getElementById('qrcode').innerHTML = "";
-        new QRCode(document.getElementById("qrcode"), { text: vLocal.prot, width: 100, height: 100 });
-        
-        setTimeout(() => window.print(), 500);
+        document.getElementById('areaBusca').style.display = vLocal ? "block" : "none";
+        if(vLocal) document.getElementById('detalhesBusca').innerHTML = `<b>Cliente:</b> ${vLocal.cli} | <b>Valor:</b> R$ ${vLocal.vTot}`;
     }
 
     render();
-    calcular();
 </script>
 </body>
 </html>
