@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNB STORE | Gestão Total</title>
+    <title>DNB STORE | Sistema Profissional</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root {
@@ -11,37 +11,33 @@
             --success: #22c55e; --text: #f8fafc; --purple: #8b5cf6; --danger: #ef4444; --warning: #f59e0b;
         }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); padding: 20px; display: flex; flex-direction: column; align-items: center; margin: 0; }
-        .container { width: 100%; max-width: 600px; margin-top: 10px; }
+        .container { width: 100%; max-width: 650px; }
         
-        /* Abas */
         .tabs { display: flex; gap: 8px; margin-bottom: 15px; width: 100%; }
         .tab-btn { flex: 1; padding: 12px; background: var(--card); border: 1px solid #2d3748; color: #94a3b8; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .tab-btn.active { background: var(--primary); color: white; }
 
         .card { background: var(--card); padding: 20px; border-radius: 16px; border: 1px solid #2d3748; margin-bottom: 15px; }
         .content-section { display: none; }
         .content-section.active { display: block; }
 
-        /* Inputs e Grelha */
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
         label { display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 4px; }
         input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #2d3748; background: #0a0f1e; color: white; box-sizing: border-box; }
         
-        /* Botões */
         .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; }
         .btn-success { background: var(--success); color: white; }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-purple { background: var(--purple); color: white; }
-        .btn-warning { background: var(--warning); color: white; }
-        .btn-danger { background: var(--danger); color: white; font-size: 0.7rem; }
+        .btn-danger { background: var(--danger); color: white; margin-top: 15px; font-size: 0.7rem; }
 
-        /* Painel de Lucro */
-        .caixa-box { background: linear-gradient(145deg, #1e293b, #0f172a); border: 1px solid var(--primary); padding: 15px; border-radius: 12px; margin-bottom: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center; }
-        .caixa-full { grid-column: span 2; border-bottom: 1px solid #2d3748; padding-bottom: 10px; margin-bottom: 5px; }
+        .caixa-box { background: #1e293b; border: 1px solid var(--primary); padding: 15px; border-radius: 12px; margin-bottom: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 10px; }
+        th { text-align: left; color: #94a3b8; padding: 8px; border-bottom: 1px solid #2d3748; }
+        td { padding: 8px; border-bottom: 1px solid #1a202c; }
 
-        /* PDF Layout (Impressão) */
+        /* PDF oculto */
         #pdfLayout { display: none; background: white !important; color: black !important; padding: 40px; }
-        .pdf-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; color: black !important; }
         @media print {
             body * { visibility: hidden; }
             #pdfLayout, #pdfLayout * { visibility: visible; }
@@ -53,190 +49,188 @@
 
 <div class="container">
     <div class="tabs">
-        <button class="tab-btn active" onclick="openTab('vendas')">💎 Vendas</button>
+        <button class="tab-btn active" onclick="openTab('vendas')">🛒 PDV</button>
         <button class="tab-btn" onclick="openTab('busca')">🔍 Auditoria</button>
-        <button class="tab-btn" onclick="openTab('financeiro')">💰 Caixa</button>
+        <button class="tab-btn" onclick="openTab('config')">⚙️ Ajustes</button>
     </div>
 
     <div id="vendas" class="content-section active">
         <div class="card">
-            <h1>DNB STORE</h1>
+            <h2 style="margin:0 0 15px 0; color:var(--primary);">DNB STORE</h2>
             <div class="grid">
-                <div><label>Nome do Cliente</label><input type="text" id="nomeCliente" placeholder="@Usuário"></div>
-                <div><label>Quantidade</label><input type="number" id="qtdRobux" oninput="calcular()"></div>
+                <div><label>Cliente (@)</label><input type="text" id="nomeCliente" placeholder="Ex: @Marcos"></div>
+                <div><label>Qtd Robux</label><input type="number" id="qtdRobux" oninput="calcular()"></div>
             </div>
-            <div id="taxRoblox" style="background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; padding: 10px; border-radius: 8px; margin-bottom: 10px; text-align: center; color: #f59e0b; font-weight: bold; font-size: 0.8rem;">Gamepass: 0</div>
+            <div id="taxRoblox" style="background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; padding: 10px; border-radius: 8px; margin-bottom: 10px; text-align: center; color: #f59e0b; font-weight: bold;">Gamepass: 0</div>
             
             <select id="vendedor" style="margin-bottom: 10px;"><option value="João">Vendedor: João</option><option value="Sócio">Vendedor: Sócio</option></select>
             
-            <button class="btn btn-success" onclick="salvarVenda()">💾 Salvar Venda</button>
-            <button class="btn btn-primary" onclick="copiarComprovanteTexto()">📋 Copiar Texto p/ Cliente</button>
+            <button class="btn btn-success" onclick="salvarVenda()">💾 SALVAR E COPIAR RECIBO</button>
+        </div>
+
+        <div class="caixa-box">
+            <div style="grid-column: span 2;"><span style="font-size: 0.7rem; color: #94a3b8;">LUCRO LÍQUIDO ACUMULADO</span><br><span id="lucroTotal" style="color: var(--success); font-size: 1.5rem; font-weight: bold;">R$ 0,00</span></div>
+            <div><span style="font-size: 0.7rem; color: #94a3b8;">JOÃO (50%)</span><br><span id="lJoao" style="color:var(--primary); font-weight:bold;">R$ 0,00</span></div>
+            <div><span style="font-size: 0.7rem; color: #94a3b8;">SÓCIO (50%)</span><br><span id="lSocio" style="color:var(--primary); font-weight:bold;">R$ 0,00</span></div>
+        </div>
+
+        <div class="card" style="padding:10px;">
+            <h4 style="margin:5px;">Vendas Recentes</h4>
+            <table id="tabelaVendas">
+                <thead><tr><th>Protocolo</th><th>Cliente</th><th>Valor</th><th>Vendedor</th></tr></thead>
+                <tbody></tbody>
+            </table>
         </div>
     </div>
 
     <div id="busca" class="content-section">
         <div class="card">
-            <h2>Buscar Protocolo</h2>
-            <input type="text" id="inputBusca" placeholder="Cole o DNB-XXXXXX aqui..." oninput="buscarProtocolo()">
-            
-            <div id="infoBusca" style="display:none; margin-top:15px; padding:10px; background:rgba(255,255,255,0.05); border-radius:8px;">
-                <p id="detalheVenda" style="font-size:0.8rem;"></p>
-                <button class="btn btn-purple" onclick="imprimirPDF('empresa')">📄 PDF Auditoria (Empresa)</button>
-                <button class="btn btn-warning" onclick="imprimirPDF('cliente')">👤 PDF Recibo (Cliente)</button>
+            <h3>Rastrear Venda</h3>
+            <input type="text" id="inputBusca" placeholder="DNB-XXXXXX" oninput="buscar()">
+            <div id="areaBusca" style="display:none; margin-top:15px;">
+                <div id="detalhesBusca" style="font-size:0.85rem; margin-bottom:15px; border-left: 3px solid var(--primary); padding-left:10px;"></div>
+                <button class="btn btn-purple" onclick="imprimir('empresa')">📄 Gerar PDF Auditoria</button>
+                <button class="btn btn-warning" onclick="imprimir('cliente')">👤 Gerar PDF Cliente</button>
             </div>
-            <div id="erroBusca" style="display:none; color:var(--danger); text-align:center; margin-top:10px;">Protocolo não encontrado.</div>
         </div>
     </div>
 
-    <div id="financeiro" class="content-section">
-        <div class="caixa-box">
-            <div class="caixa-full">
-                <span style="font-size: 0.7rem; color: #94a3b8;">LUCRO TOTAL DA EMPRESA</span><br>
-                <span id="lucroTotalGeral" style="color: var(--success); font-size: 1.8rem; font-weight: bold;">R$ 0,00</span>
-            </div>
-            <div><span style="font-size: 0.7rem; color: #94a3b8;">MEU LUCRO (50%)</span><br><span id="lucroJoao" style="font-weight: bold; color: var(--primary); font-size: 1.2rem;">R$ 0,00</span></div>
-            <div><span style="font-size: 0.7rem; color: #94a3b8;">LUCRO SÓCIO (50%)</span><br><span id="lucroSocio" style="font-weight: bold; color: var(--primary); font-size: 1.2rem;">R$ 0,00</span></div>
+    <div id="config" class="content-section">
+        <div class="card">
+            <h3>Ajuste de Preços (Unidade)</h3>
+            <label>Custo do Fornecedor (R$ por 1 Robux)</label>
+            <input type="number" id="confCusto" value="0.0335" step="0.0001">
+            <label>Preço de Venda (R$ por 1 Robux)</label>
+            <input type="number" id="confVenda" value="0.0480" step="0.0001">
+            <p style="font-size:0.7rem; color:#94a3b8;">* Esses valores alteram o cálculo do lucro 50/50.</p>
         </div>
-        <button class="btn btn-danger" onclick="limparTudo()">⚠️ Resetar Todo o Sistema</button>
+        <button class="btn btn-danger" onclick="localStorage.clear(); location.reload();">🗑️ RESETAR SISTEMA</button>
     </div>
 </div>
 
 <div id="pdfLayout">
-    <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px;">
-        <h1 style="margin:0;">DNB STORE</h1>
-        <p style="margin:0; font-size:12px;">Raposo Família Martins Residenciais</p>
-        <h3 id="pdfTitulo" style="margin-top:10px; text-transform: uppercase;"></h3>
+    <h2 id="pdfTit" style="text-align:center; border-bottom: 2px solid #000;"></h2>
+    <div id="pdfCorpo"></div>
+    <div id="pdfAudit" style="margin-top:20px; background:#eee; padding:10px; display:none;">
+        <h4>DIVISÃO DE LUCRO</h4>
+        <p id="pAuditData"></p>
     </div>
-    <div id="corpoPdf"></div>
-    <div id="financeiroPdf" style="display:none; margin-top:20px; background:#f0f0f0; padding:15px; border:1px solid #ccc;">
-        <h4 style="margin:0 0 10px 0;">DIVISÃO INTERNA DE LUCRO</h4>
-        <div class="pdf-row"><span>Custo de Aquisição:</span><span id="pCusto"></span></div>
-        <div class="pdf-row"><span>Lucro Bruto:</span><span id="pLucro"></span></div>
-        <div class="pdf-row"><span><b>Parte João (50%):</b></span><span id="pJoao"></span></div>
-        <div class="pdf-row"><span><b>Parte Sócio (50%):</b></span><span id="pSocio"></span></div>
-    </div>
-    <div style="margin-top:25px; font-size:10px; text-align:justify; border-top:1px solid #000; padding-top:10px;">
-        <b>TERMOS:</b> Problemas com a entrega devem ser comunicados em 24h. Reembolsos não são permitidos após a transferência no Roblox. Prazo: 3-7 dias.
+    <div style="margin-top:20px; font-size:10px; border-top:1px solid #000;">
+        <b>DNB STORE:</b> Prazo 3-7 dias (Roblox). Sem reembolsos após envio.
     </div>
     <div style="display:flex; justify-content:center; margin-top:20px;"><div id="qrcode"></div></div>
-    <p style="text-align:center; font-size:8px; margin-top:5px;" id="pHash"></p>
 </div>
 
 <script>
-    let currentProtocol = "";
-    let currentHash = "";
-    let vendaLocalizada = null;
+    let vLocal = null;
+    let prot = "";
+    let hash = "";
 
-    function openTab(tabId) {
+    function openTab(id) {
         document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
+        document.getElementById(id).classList.add('active');
         event.currentTarget.classList.add('active');
-        if(tabId === 'financeiro') atualizarFinanceiro();
     }
 
     function calcular() {
-        const qtd = parseFloat(document.getElementById('qtdRobux').value) || 0;
+        const qtd = document.getElementById('qtdRobux').value;
         document.getElementById('taxRoblox').innerText = `Gamepass Sugerida: ${Math.ceil(qtd / 0.7)} Robux`;
-        currentProtocol = "DNB-" + Math.floor(100000 + Math.random() * 900000);
-        currentHash = "SIG-" + Math.random().toString(36).substring(2, 12).toUpperCase();
+        prot = "DNB-" + Math.floor(100000 + Math.random() * 900000);
+        hash = "SIG-" + Math.random().toString(36).substring(2, 10).toUpperCase();
     }
 
     function salvarVenda() {
         const qtd = document.getElementById('qtdRobux').value;
-        if(!qtd) return alert("Digite a quantidade!");
-        if(!currentProtocol) calcular();
+        const cli = document.getElementById('nomeCliente').value || "Cliente";
+        if(!qtd) return alert("Erro: Quantidade vazia");
 
-        const custo = qtd * 0.0335;
-        const venda = qtd * 0.0480;
-        const lucro = venda - custo;
+        const custoU = parseFloat(document.getElementById('confCusto').value);
+        const vendaU = parseFloat(document.getElementById('confVenda').value);
 
-        const registro = {
-            protocolo: currentProtocol,
-            hash: currentHash,
-            cliente: document.getElementById('nomeCliente').value || "Cliente",
-            vendedor: document.getElementById('vendedor').value,
-            qtd: qtd,
-            valorVenda: venda.toFixed(2),
-            valorCusto: custo.toFixed(2),
-            valorLucro: lucro.toFixed(2),
-            data: new Date().toLocaleDateString('pt-BR'),
-            hora: new Date().toLocaleTimeString('pt-BR')
+        const vTot = (qtd * vendaU).toFixed(2);
+        const cTot = (qtd * custoU).toFixed(2);
+        const lTot = (vTot - cTot).toFixed(2);
+
+        const venda = {
+            prot, hash, cli, v: document.getElementById('vendedor').value,
+            qtd, vTot, cTot, lTot,
+            data: new Date().toLocaleDateString(),
+            hora: new Date().toLocaleTimeString()
         };
 
-        let db = JSON.parse(localStorage.getItem('dnb_final')) || [];
-        db.unshift(registro);
-        localStorage.setItem('dnb_final', JSON.stringify(db));
+        let db = JSON.parse(localStorage.getItem('dnb_db')) || [];
+        db.unshift(venda);
+        localStorage.setItem('dnb_db', JSON.stringify(db));
+
+        // COPIAR COMPROVANTE AUTOMÁTICO
+        const texto = `💎 *DNB STORE*\n\n🆔 *PROT:* ${prot}\n👤 *CLIENTE:* ${cli}\n📦 *PRODUTO:* ${qtd} Robux\n💰 *VALOR:* R$ ${vTot}\n✅ *STATUS:* CONCLUÍDO\n\n🛡️ _O PDF oficial pode ser solicitado ao vendedor!_`;
+        navigator.clipboard.writeText(texto);
         
-        alert("Venda Salva! Protocolo: " + currentProtocol);
+        alert("Venda Salva! Recibo copiado para o WhatsApp.");
+        render();
         document.getElementById('qtdRobux').value = "";
         calcular();
     }
 
-    function copiarComprovanteTexto() {
-        const qtd = document.getElementById('qtdRobux').value;
-        if(!qtd) return alert("Preencha os dados primeiro!");
-        const valor = (qtd * 0.048).toFixed(2);
-        const texto = `💎 *DNB STORE - COMPROVANTE*\n\n🆔 *PROT:* ${currentProtocol}\n👤 *CLIENTE:* ${document.getElementById('nomeCliente').value}\n📦 *PRODUTO:* ${qtd} Robux\n💰 *VALOR:* R$ ${valor}\n✅ *STATUS:* CONCLUÍDO\n\n🛡️ _O PDF oficial pode ser solicitado ao vendedor!_`;
-        navigator.clipboard.writeText(texto);
-        alert("Texto copiado p/ WhatsApp!");
+    function render() {
+        const db = JSON.parse(localStorage.getItem('dnb_db')) || [];
+        let totalL = 0;
+        const tbody = document.querySelector("#tabelaVendas tbody");
+        tbody.innerHTML = "";
+
+        db.forEach((v, i) => {
+            if(i < 5) {
+                tbody.innerHTML += `<tr><td>${v.prot}</td><td>${v.cli}</td><td>R$ ${v.vTot}</td><td>${v.v}</td></tr>`;
+            }
+            totalL += parseFloat(v.lTot);
+        });
+
+        document.getElementById('lucroTotal').innerText = `R$ ${totalL.toFixed(2)}`;
+        document.getElementById('lJoao').innerText = `R$ ${(totalL/2).toFixed(2)}`;
+        document.getElementById('lSocio').innerText = `R$ ${(totalL/2).toFixed(2)}`;
     }
 
-    function buscarProtocolo() {
-        const busca = document.getElementById('inputBusca').value.trim().toUpperCase();
-        const db = JSON.parse(localStorage.getItem('dnb_final')) || [];
-        vendaLocalizada = db.find(v => v.protocolo === busca);
+    function buscar() {
+        const b = document.getElementById('inputBusca').value.toUpperCase();
+        const db = JSON.parse(localStorage.getItem('dnb_db')) || [];
+        vLocal = db.find(v => v.prot === b);
 
-        if(vendaLocalizada) {
-            document.getElementById('infoBusca').style.display = "block";
-            document.getElementById('erroBusca').style.display = "none";
-            document.getElementById('detalheVenda').innerHTML = `<b>Cliente:</b> ${vendaLocalizada.cliente}<br><b>Qtd:</b> ${vendaLocalizada.qtd} Robux<br><b>Data:</b> ${vendaLocalizada.data}`;
+        if(vLocal) {
+            document.getElementById('areaBusca').style.display = "block";
+            document.getElementById('detalhesBusca').innerHTML = `<b>Cliente:</b> ${vLocal.cli}<br><b>Data:</b> ${vLocal.data}<br><b>Total:</b> R$ ${vLocal.vTot}`;
         } else {
-            document.getElementById('infoBusca').style.display = "none";
-            if(busca.length > 5) document.getElementById('erroBusca').style.display = "block";
+            document.getElementById('areaBusca').style.display = "none";
         }
     }
 
-    function atualizarFinanceiro() {
-        const db = JSON.parse(localStorage.getItem('dnb_final')) || [];
-        let totalLucro = 0;
-        db.forEach(v => totalLucro += parseFloat(v.valorLucro));
-
-        document.getElementById('lucroTotalGeral').innerText = `R$ ${totalLucro.toFixed(2)}`;
-        document.getElementById('lucroJoao').innerText = `R$ ${(totalLucro/2).toFixed(2)}`;
-        document.getElementById('lucroSocio').innerText = `R$ ${(totalLucro/2).toFixed(2)}`;
-    }
-
-    function imprimirPDF(tipo) {
-        const v = vendaLocalizada;
-        document.getElementById('pdfTitulo').innerText = tipo === 'empresa' ? "Auditoria Interna de Venda" : "Recibo Oficial do Cliente";
-        document.getElementById('financeiroPdf').style.display = tipo === 'empresa' ? "block" : "none";
+    function imprimir(tipo) {
+        document.getElementById('pdfTit').innerText = tipo === 'empresa' ? "AUDITORIA INTERNA" : "RECIBO DO CLIENTE";
+        document.getElementById('pdfAudit').style.display = tipo === 'empresa' ? "block" : "none";
         
-        document.getElementById('corpoPdf').innerHTML = `
-            <div class="pdf-row"><span><b>Protocolo:</b></span><span>${v.protocolo}</span></div>
-            <div class="pdf-row"><span><b>Cliente:</b></span><span>${v.cliente}</span></div>
-            <div class="pdf-row"><span><b>Data/Hora:</b></span><span>${v.data} às ${v.hora}</span></div>
-            <div class="pdf-row"><span><b>Produto:</b></span><span>${v.qtd} Robux Líquidos</span></div>
-            <div class="pdf-row"><span><b>Total Pago:</b></span><span>R$ ${v.valorVenda}</span></div>
+        document.getElementById('pdfCorpo').innerHTML = `
+            <p><b>Protocolo:</b> ${vLocal.prot}</p>
+            <p><b>Cliente:</b> ${vLocal.cli}</p>
+            <p><b>Produto:</b> ${vLocal.qtd} Robux</p>
+            <p><b>Valor Pago:</b> R$ ${vLocal.vTot}</p>
+            <p><b>Data:</b> ${vLocal.data} - ${vLocal.hora}</p>
         `;
 
         if(tipo === 'empresa') {
-            document.getElementById('pCusto').innerText = "R$ " + v.valorCusto;
-            document.getElementById('pLucro').innerText = "R$ " + v.valorLucro;
-            document.getElementById('pJoao').innerText = "R$ " + (v.valorLucro / 2).toFixed(2);
-            document.getElementById('pSocio').innerText = "R$ " + (v.valorLucro / 2).toFixed(2);
+            document.getElementById('pAuditData').innerHTML = `
+                Lucro Bruto: R$ ${vLocal.lTot}<br>
+                <b>João: R$ ${(vLocal.lTot/2).toFixed(2)}</b><br>
+                <b>Sócio: R$ ${(vLocal.lTot/2).toFixed(2)}</b>
+            `;
         }
 
-        document.getElementById('pHash').innerText = "Assinatura Digital: " + v.hash;
         document.getElementById('qrcode').innerHTML = "";
-        new QRCode(document.getElementById("qrcode"), { text: v.protocolo, width: 100, height: 100, colorDark: "#000" });
-
+        new QRCode(document.getElementById("qrcode"), { text: vLocal.prot, width: 100, height: 100 });
+        
         setTimeout(() => window.print(), 500);
     }
 
-    function limparTudo() { if(confirm("CUIDADO! Isso apagará todas as vendas e o lucro. Deseja continuar?")) { localStorage.clear(); location.reload(); } }
-    
-    atualizarFinanceiro();
+    render();
     calcular();
 </script>
 </body>
