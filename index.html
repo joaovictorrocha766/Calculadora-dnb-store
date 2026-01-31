@@ -3,67 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNB STORE | Gestão & Segurança</title>
+    <title>DNB STORE | Sistema de Auditoria</title>
     <style>
         :root {
             --bg: #0a0f1e; --card: #161e31; --primary: #3b82f6;
             --success: #22c55e; --text: #f8fafc; --purple: #8b5cf6; --danger: #ef4444; --warning: #f59e0b;
         }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .container { width: 100%; max-width: 550px; }
-        .card { background: var(--card); padding: 20px; border-radius: 16px; border: 1px solid #2d3748; margin-bottom: 20px; position: relative; }
-        h1 { color: var(--primary); text-align: center; margin-top: 0; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); padding: 20px; display: flex; flex-direction: column; align-items: center; margin: 0; }
+        .container { width: 100%; max-width: 600px; margin-top: 20px; }
+        
+        /* Menu de Abas */
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; width: 100%; }
+        .tab-btn { flex: 1; padding: 12px; background: var(--card); border: 1px solid #2d3748; color: #94a3b8; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        .card { background: var(--card); padding: 25px; border-radius: 16px; border: 1px solid #2d3748; margin-bottom: 20px; position: relative; }
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+
+        h1 { color: var(--primary); text-align: center; margin-top: 0; font-size: 1.5rem; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
         label { display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 5px; }
-        input, select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #2d3748; background: #0a0f1e; color: white; box-sizing: border-box; }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #2d3748; background: #0a0f1e; color: white; box-sizing: border-box; }
+        
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; }
         .btn-success { background: var(--success); color: white; }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-danger { background: var(--danger); color: white; }
+        .btn-purple { background: var(--purple); color: white; }
+        
+        /* Estilo Busca */
+        .result-box { margin-top: 20px; padding: 20px; background: rgba(59, 130, 246, 0.05); border-radius: 12px; border: 1px solid var(--primary); line-height: 1.6; }
+        .result-item { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 10px 0; font-size: 0.9rem; }
+        .result-label { color: #94a3b8; }
+        .result-val { font-weight: bold; color: var(--text); }
+
         .caixa-box { background: #1a202c; border: 1px solid var(--primary); padding: 15px; border-radius: 12px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center; }
-        .history-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
-        .history-table th { text-align: left; color: #94a3b8; border-bottom: 1px solid #2d3748; padding: 8px; }
-        .history-table td { padding: 8px; border-bottom: 1px solid #1a202c; }
-        .protocol-badge { background: #1e293b; color: var(--warning); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.7rem; }
+
+        /* Estilo para Impressão do Relatório */
+        @media print {
+            body * { visibility: hidden; }
+            #printableArea, #printableArea * { visibility: visible; }
+            #printableArea { position: absolute; left: 0; top: 0; width: 100%; color: black !important; background: white !important; }
+            .result-val { color: black !important; }
+            .btn { display: none; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="card">
-        <h1>DNB STORE 💎</h1>
-        <div class="grid">
-            <div><label>Custo Forn.</label><input type="number" id="taxaCusto" value="0.0335" step="0.0001"></div>
-            <div><label>Venda Robux</label><input type="number" id="taxaVenda" value="0.0480" step="0.0001"></div>
-        </div>
-        
-        <div class="grid">
-            <div><label>Nome do Cliente</label><input type="text" id="nomeCliente" placeholder="@Exemplo"></div>
-            <div><label>Quantidade Robux</label><input type="number" id="qtdRobux" oninput="calcular()"></div>
-        </div>
-
-        <div id="taxRoblox" style="background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; padding: 10px; border-radius: 8px; margin-bottom: 15px; text-align: center; color: #f59e0b; font-size: 0.9rem;">Gamepass: 0 Robux</div>
-
-        <div class="grid">
-            <select id="vendedor"><option value="João">Vendedor: João</option><option value="Sócio">Vendedor: Sócio</option></select>
-            <button class="btn btn-success" style="margin-top:0" onclick="salvarVenda()">💾 Salvar Venda</button>
-        </div>
-        <button class="btn btn-primary" onclick="gerarComprovante()">📋 Gerar Comprovante Profissional</button>
+    <div class="tabs">
+        <button class="tab-btn active" onclick="openTab('calc')">📊 Calculadora</button>
+        <button class="tab-btn" onclick="openTab('busca')">🔍 Buscar Protocolo</button>
     </div>
 
-    <div class="caixa-box">
-        <div style="grid-column: span 2;"><span style="font-size: 0.7rem; color: #94a3b8;">LUCRO TOTAL HOJE</span><br><span id="totalLucroDia" style="color: var(--success); font-size: 1.5rem; font-weight: bold;">R$ 0,00</span></div>
-        <div><span style="font-size: 0.7rem; color: #94a3b8;">JOÃO (50%)</span><br><span id="totalJoao" style="font-weight: bold; color: var(--primary);">R$ 0,00</span></div>
-        <div><span style="font-size: 0.7rem; color: #94a3b8;">SÓCIO (50%)</span><br><span id="totalSocio" style="font-weight: bold; color: var(--primary);">R$ 0,00</span></div>
+    <div id="calc" class="content-section active">
+        <div class="card">
+            <h1>DNB STORE 💎</h1>
+            <div class="grid">
+                <div><label>Custo Unit.</label><input type="number" id="taxaCusto" value="0.0335" step="0.0001"></div>
+                <div><label>Venda Unit.</label><input type="number" id="taxaVenda" value="0.0480" step="0.0001"></div>
+            </div>
+            <div class="grid">
+                <div><label>Nome do Cliente</label><input type="text" id="nomeCliente" placeholder="Ex: @Joao"></div>
+                <div><label>Quantidade Robux</label><input type="number" id="qtdRobux" oninput="calcular()"></div>
+            </div>
+            <div id="taxRoblox" style="background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; padding: 10px; border-radius: 8px; margin-bottom: 15px; text-align: center; color: #f59e0b; font-size: 0.85rem; font-weight: bold;">Gamepass: 0 Robux</div>
+            <div class="grid">
+                <select id="vendedor"><option value="João">Vendedor: João</option><option value="Sócio">Vendedor: Sócio</option></select>
+                <button class="btn btn-success" style="margin-top:0" onclick="salvarVenda()">💾 Salvar Venda</button>
+            </div>
+            <button class="btn btn-primary" onclick="gerarComprovante()">📋 Gerar Comprovante</button>
+        </div>
+
+        <div class="caixa-box">
+            <div style="grid-column: span 2;"><span style="font-size: 0.7rem; color: #94a3b8;">LUCRO TOTAL HOJE</span><br><span id="totalLucroDia" style="color: var(--success); font-size: 1.5rem; font-weight: bold;">R$ 0,00</span></div>
+            <div><span style="font-size: 0.7rem; color: #94a3b8;">JOÃO (50%)</span><br><span id="totalJoao" style="font-weight: bold; color: var(--primary);">R$ 0,00</span></div>
+            <div><span style="font-size: 0.7rem; color: #94a3b8;">SÓCIO (50%)</span><br><span id="totalSocio" style="font-weight: bold; color: var(--primary);">R$ 0,00</span></div>
+        </div>
     </div>
 
-    <div class="card">
-        <h2>Vendas de Hoje</h2>
-        <table class="history-table">
-            <thead><tr><th>Cliente</th><th>Qtd</th><th>Valor</th><th>Ação</th></tr></thead>
-            <tbody id="listaVendas"></tbody>
-        </table>
-        <button class="btn btn-danger" onclick="fecharDia()">🌙 Fechar o Dia</button>
+    <div id="busca" class="content-section">
+        <div class="card">
+            <h2>Rastreamento de Venda</h2>
+            <input type="text" id="inputBusca" placeholder="Insira Protocolo DNB-XXXXXX" oninput="buscarProtocolo()">
+
+            <div id="printableArea">
+                <div id="resultadoBusca" class="result-box" style="display: none;">
+                    <h3 style="text-align:center; color:var(--primary); margin-top:0;">DNB STORE - RELATÓRIO DE AUDITORIA</h3>
+                    <div class="result-item"><span class="result-label">Status do Sistema:</span><span class="result-val" style="color:var(--success)">✅ REGISTRO AUTÊNTICO</span></div>
+                    <div class="result-item"><span class="result-label">ID do Protocolo:</span><span id="resProt" class="result-val"></span></div>
+                    <div class="result-item"><span class="result-label">Assinatura Digital (Hash):</span><span id="resHash" class="result-val"></span></div>
+                    <div class="result-item"><span class="result-label">Cliente Atendido:</span><span id="resCli" class="result-val"></span></div>
+                    <div class="result-item"><span class="result-label">Data da Transação:</span><span id="resData" class="result-val"></span></div>
+                    <div class="result-item"><span class="result-label">Horário (Segundos):</span><span id="resHora" class="result-val"></span></div>
+                    <div class="result-item"><span class="result-label">Operador/Vendedor:</span><span id="resVend" class="result-val"></span></div>
+                    <div class="result-item"><span class="result-label">Volume de Robux:</span><span id="resQtd" class="result-val"></span></div>
+                    <div class="result-item"><span class="result-label">Faturamento:</span><span id="resValor" class="result-val"></span></div>
+                    <div class="result-item"><span class="result-label">Lucro Empresa:</span><span id="resLucro" class="result-val"></span></div>
+                    <div class="result-item" style="border:none;"><span class="result-label">Divisão:</span><span class="result-val" style="color:var(--purple)">50% João / 50% Sócio</span></div>
+                </div>
+            </div>
+            
+            <button class="btn btn-purple" id="btnImprimir" style="display:none;" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+            <div id="erroBusca" style="display:none; color:var(--danger); text-align:center; margin-top:20px;">⚠️ Protocolo inexistente ou inválido.</div>
+        </div>
     </div>
 </div>
 
@@ -71,17 +115,24 @@
     let currentProtocol = "";
     let currentHash = "";
 
+    function openTab(tabId) {
+        document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
+
     function calcular() {
         const qtd = parseFloat(document.getElementById('qtdRobux').value) || 0;
-        document.getElementById('taxRoblox').innerText = `O cliente cria Gamepass de: ${Math.ceil(qtd / 0.7)} Robux`;
+        document.getElementById('taxRoblox').innerText = `Gamepass Sugerida: ${Math.ceil(qtd / 0.7)} Robux`;
         currentProtocol = "DNB-" + Math.floor(100000 + Math.random() * 900000);
-        currentHash = Math.random().toString(36).substring(2, 6).toUpperCase() + "-" + Math.random().toString(36).substring(2, 6).toUpperCase();
+        currentHash = Math.random().toString(36).substring(2, 6).toUpperCase() + "-" + Math.random().toString(36).substring(2, 16).toUpperCase();
     }
 
     function salvarVenda() {
         const qtd = document.getElementById('qtdRobux').value;
-        const cliente = document.getElementById('nomeCliente').value || "Não informado";
         if(!qtd) return alert("Insira a quantidade!");
+        const cliente = document.getElementById('nomeCliente').value || "Não identificado";
 
         const venda = {
             protocolo: currentProtocol,
@@ -90,79 +141,68 @@
             vendedor: document.getElementById('vendedor').value,
             qtd: qtd,
             valor: (qtd * parseFloat(document.getElementById('taxaVenda').value)).toFixed(2),
-            lucroIndividual: (((qtd * parseFloat(document.getElementById('taxaVenda').value)) - (qtd * parseFloat(document.getElementById('taxaCusto').value))) / 2).toFixed(2)
+            lucroTotal: ((qtd * parseFloat(document.getElementById('taxaVenda').value)) - (qtd * parseFloat(document.getElementById('taxaCusto').value))).toFixed(2),
+            data: new Date().toLocaleDateString('pt-BR'),
+            horaCompleta: new Date().toLocaleTimeString('pt-BR') // Já inclui segundos
         };
 
-        let historico = JSON.parse(localStorage.getItem('dnb_vendas')) || [];
-        historico.unshift(venda);
-        localStorage.setItem('dnb_vendas', JSON.stringify(historico));
-        renderizar();
-        alert("Venda de " + cliente + " salva!");
+        let db = JSON.parse(localStorage.getItem('dnb_db')) || [];
+        db.unshift(venda);
+        localStorage.setItem('dnb_db', JSON.stringify(db));
+        
+        atualizarResumo();
+        alert("Venda registrada no sistema com sucesso!");
+    }
+
+    function atualizarResumo() {
+        const db = JSON.parse(localStorage.getItem('dnb_db')) || [];
+        const hoje = new Date().toLocaleDateString('pt-BR');
+        let totalL = 0;
+        db.filter(v => v.data === hoje).forEach(v => totalL += parseFloat(v.lucroTotal));
+
+        document.getElementById('totalLucroDia').innerText = `R$ ${totalL.toFixed(2)}`;
+        document.getElementById('totalJoao').innerText = `R$ ${(totalL/2).toFixed(2)}`;
+        document.getElementById('totalSocio').innerText = `R$ ${(totalL/2).toFixed(2)}`;
+    }
+
+    function buscarProtocolo() {
+        const busca = document.getElementById('inputBusca').value.trim().toUpperCase();
+        const db = JSON.parse(localStorage.getItem('dnb_db')) || [];
+        const venda = db.find(v => v.protocolo === busca);
+
+        if(venda) {
+            document.getElementById('resultadoBusca').style.display = "block";
+            document.getElementById('btnImprimir').style.display = "flex";
+            document.getElementById('erroBusca').style.display = "none";
+            
+            document.getElementById('resProt').innerText = venda.protocolo;
+            document.getElementById('resHash').innerText = venda.hash;
+            document.getElementById('resCli').innerText = venda.cliente;
+            document.getElementById('resData').innerText = venda.data;
+            document.getElementById('resHora').innerText = venda.horaCompleta;
+            document.getElementById('resVend').innerText = venda.vendedor;
+            document.getElementById('resQtd').innerText = venda.qtd + " Robux";
+            document.getElementById('resValor').innerText = "R$ " + venda.valor;
+            document.getElementById('resLucro').innerText = "R$ " + venda.lucroTotal;
+        } else {
+            document.getElementById('resultadoBusca').style.display = "none";
+            document.getElementById('btnImprimir').style.display = "none";
+            if(busca.length > 5) document.getElementById('erroBusca').style.display = "block";
+        }
     }
 
     function gerarComprovante() {
         const qtd = document.getElementById('qtdRobux').value;
+        if(!qtd) return alert("Erro: Calcule uma venda!");
         const cliente = document.getElementById('nomeCliente').value || "Cliente";
         const valor = (qtd * parseFloat(document.getElementById('taxaVenda').value)).toFixed(2);
-        
-        if(!qtd) return alert("Preencha os dados primeiro!");
-        if(!currentProtocol) calcular();
 
-        const texto = `💎 *DNB STORE - COMPROVANTE OFICIAL* 💎
-------------------------------------------
-👤 *CLIENTE:* ${cliente}
-🆔 *PROTOCOLO:* ${currentProtocol}
-🔑 *AUTENTICIDADE:* ${currentHash}
-📅 *DATA:* ${new Date().toLocaleDateString()}
-⏰ *HORA:* ${new Date().toLocaleTimeString()}
-👤 *VENDEDOR:* ${document.getElementById('vendedor').value}
-
-📦 *PRODUTO:* ${qtd} Robux (Líquidos)
-💰 *VALOR TOTAL:* R$ ${valor}
-✅ *STATUS:* ENTREGUE / CONCLUÍDO
-------------------------------------------
-📜 *TERMOS E POLÍTICA DE ENTREGA:*
-O prazo para os Robux saírem de "pendente" para o seu saldo real é de *3 a 7 dias*, conforme as normas oficiais do Roblox. A DNB Store garante a entrega do produto, mas não tem poder sobre o tempo de processamento do Roblox.
-
-🛡️ _Este recibo é único e rastreável._
-🚀 *Obrigado pela preferência!*`;
-
+        const texto = `💎 *DNB STORE - COMPROVANTE OFICIAL* 💎\n\n👤 *CLIENTE:* ${cliente}\n🆔 *PROTOCOLO:* ${currentProtocol}\n🔑 *HASH:* ${currentHash}\n📅 *DATA:* ${new Date().toLocaleDateString()}\n⏰ *HORA:* ${new Date().toLocaleTimeString()}\n\n📦 *PRODUTO:* ${qtd} Robux\n💰 *VALOR:* R$ ${valor}\n\n✅ *STATUS:* CONCLUÍDO\n🛡️ _Autenticidade rastreável em nosso sistema oficial._`;
         navigator.clipboard.writeText(texto);
-        alert("Comprovante de " + cliente + " copiado!");
+        alert("Comprovante profissional copiado!");
     }
 
-    function renderizar() {
-        const historico = JSON.parse(localStorage.getItem('dnb_vendas')) || [];
-        const lista = document.getElementById('listaVendas');
-        let totalL = 0, tJoao = 0, tSocio = 0;
-
-        lista.innerHTML = historico.map((v, index) => {
-            const lInd = parseFloat(v.lucroIndividual);
-            totalL += (lInd * 2);
-            if(v.vendedor === "João") tJoao += lInd; else tSocio += lInd;
-            return `<tr><td>${v.cliente}</td><td>${v.qtd}</td><td>R$ ${v.valor}</td><td><button style="color:red; background:none; border:none; cursor:pointer;" onclick="deletarVenda(${index})">×</button></td></tr>`;
-        }).join('');
-
-        document.getElementById('totalLucroDia').innerText = `R$ ${totalL.toFixed(2)}`;
-        document.getElementById('totalJoao').innerText = `R$ ${tJoao.toFixed(2)}`;
-        document.getElementById('totalSocio').innerText = `R$ ${tSocio.toFixed(2)}`;
-    }
-
-    function deletarVenda(index) {
-        let historico = JSON.parse(localStorage.getItem('dnb_vendas'));
-        historico.splice(index, 1);
-        localStorage.setItem('dnb_vendas', JSON.stringify(historico));
-        renderizar();
-    }
-
-    function fecharDia() {
-        if(confirm("Deseja fechar o dia e zerar o caixa?")){
-            localStorage.removeItem('dnb_vendas');
-            renderizar();
-        }
-    }
-
-    renderizar();
+    atualizarResumo();
 </script>
 </body>
 </html>
