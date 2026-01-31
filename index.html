@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel DNB Store  | Robux</title>
+    <title>Painel DNB STORE | Robux</title>
     <style>
         :root {
             --bg: #0f172a;
@@ -12,14 +12,15 @@
             --success: #22c55e;
             --text: #f8fafc;
             --input-bg: #0f172a;
+            --purple: #8b5cf6;
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: var(--bg);
             color: var(--text);
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             min-height: 100vh;
             margin: 0;
@@ -28,7 +29,7 @@
 
         .calc-container {
             background: var(--card);
-            padding: 30px;
+            padding: 25px;
             border-radius: 16px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.4);
             width: 100%;
@@ -48,8 +49,6 @@
             margin-bottom: 20px;
         }
 
-        .input-group { margin-bottom: 15px; }
-
         label { display: block; margin-bottom: 6px; color: #94a3b8; font-size: 0.85rem; font-weight: 600; }
 
         input {
@@ -63,36 +62,64 @@
             box-sizing: border-box;
         }
 
-        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
+        .main-input input { font-size: 1.3rem; border: 2px solid var(--primary); text-align: center; }
 
-        .main-input input {
-            font-size: 1.3rem;
-            border: 2px solid var(--primary);
-            text-align: center;
-        }
-
-        .results {
-            display: grid;
-            gap: 12px;
-            margin-top: 25px;
-        }
+        .results { display: grid; gap: 10px; margin-top: 20px; }
 
         .res-item {
             background: rgba(255,255,255,0.05);
-            padding: 15px;
+            padding: 12px;
             border-radius: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .res-item span:first-child { color: #94a3b8; font-size: 0.9rem; }
+        .socio-box {
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px dashed var(--purple);
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
 
-        .val-final { font-size: 1.5rem; color: var(--success); font-weight: bold; }
-        .val-custo { color: #f87171; font-weight: 500; }
-        .val-lucro { color: var(--primary); font-weight: 500; }
+        .socio-row { display: flex; justify-content: space-between; font-size: 0.9rem; }
 
-        .footer { text-align: center; margin-top: 25px; font-size: 0.75rem; color: #64748b; }
+        .btn-save {
+            width: 100%;
+            margin-top: 15px;
+            padding: 12px;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-save:hover { background: #16a34a; }
+
+        /* Histórico */
+        .history-container {
+            width: 100%;
+            max-width: 450px;
+            margin-top: 30px;
+            background: var(--card);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid #334155;
+        }
+
+        .history-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .history-table th { color: #94a3b8; text-align: left; padding: 8px; border-bottom: 1px solid #334155; }
+        .history-table td { padding: 8px; border-bottom: 1px solid #1e293b; }
+
+        .val-final { color: var(--success); font-weight: bold; }
+        .val-lucro { color: var(--primary); font-weight: bold; }
     </style>
 </head>
 <body>
@@ -118,23 +145,44 @@
 
         <div class="results">
             <div class="res-item">
-                <span>Total Fornecedor (Pagar)</span>
-                <span id="custo" class="val-custo">R$ 0,00</span>
+                <span style="color: #94a3b8;">Preço para Cliente</span>
+                <span id="venda" class="val-final">R$ 0,00</span>
             </div>
             <div class="res-item">
-                <span>Lucro Total (Loja)</span>
+                <span style="color: #94a3b8;">Lucro Bruto Total</span>
                 <span id="lucro" class="val-lucro">R$ 0,00</span>
             </div>
-            <div class="res-item" style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.2);">
-                <span>TOTAL PARA O CLIENTE</span>
-                <span id="venda" class="val-final">R$ 0,00</span>
+            
+            <div class="socio-box">
+                <div class="socio-row">
+                    <span>Sua Parte (50%)</span>
+                    <span id="parteVoce" style="color: var(--purple); font-weight: bold;">R$ 0,00</span>
+                </div>
+                <div class="socio-row">
+                    <span>Sócio (50%)</span>
+                    <span id="parteSocio" style="color: var(--purple); font-weight: bold;">R$ 0,00</span>
+                </div>
             </div>
         </div>
 
-        <div class="footer">
-            Nexus Keys &copy; 2026<br>
-            Painel Administrativo de Robux
-        </div>
+        <button class="btn-save" onclick="salvarVenda()">💾 Salvar Venda</button>
+    </div>
+
+    <div class="history-container">
+        <h3 style="margin-top: 0; font-size: 1rem; color: var(--primary);">Vendas Salvas (Últimas 5)</h3>
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Qtd</th>
+                    <th>Venda</th>
+                    <th>Lucro</th>
+                </tr>
+            </thead>
+            <tbody id="listaVendas">
+                </tbody>
+        </table>
+        <button onclick="limparHistorico()" style="background: none; border: none; color: #f87171; font-size: 0.7rem; cursor: pointer; margin-top: 10px;">Limpar Histórico</button>
     </div>
 
     <script>
@@ -143,20 +191,60 @@
             const taxaCusto = parseFloat(document.getElementById('taxaCusto').value);
             const taxaVenda = parseFloat(document.getElementById('taxaVenda').value);
 
-            if (qtd > 0 && !isNaN(taxaCusto) && !isNaN(taxaVenda)) {
-                const custoTotal = qtd * taxaCusto;
+            if (qtd > 0) {
                 const vendaTotal = qtd * taxaVenda;
-                const lucroTotal = vendaTotal - custoTotal;
+                const lucroTotal = vendaTotal - (qtd * taxaCusto);
+                const cadaSocio = lucroTotal / 2;
 
-                document.getElementById('custo').innerText = `R$ ${custoTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-                document.getElementById('lucro').innerText = `R$ ${lucroTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-                document.getElementById('venda').innerText = `R$ ${vendaTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-            } else {
-                document.getElementById('custo').innerText = "R$ 0,00";
-                document.getElementById('lucro').innerText = "R$ 0,00";
-                document.getElementById('venda').innerText = "R$ 0,00";
+                document.getElementById('venda').innerText = `R$ ${vendaTotal.toFixed(2)}`;
+                document.getElementById('lucro').innerText = `R$ ${lucroTotal.toFixed(2)}`;
+                document.getElementById('parteVoce').innerText = `R$ ${cadaSocio.toFixed(2)}`;
+                document.getElementById('parteSocio').innerText = `R$ ${cadaSocio.toFixed(2)}`;
             }
         }
+
+        function salvarVenda() {
+            const qtd = document.getElementById('qtdRobux').value;
+            const venda = document.getElementById('venda').innerText;
+            const lucro = document.getElementById('lucro').innerText;
+            
+            if (!qtd) return alert("Calcule uma venda antes de salvar!");
+
+            const novaVenda = {
+                data: new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}),
+                qtd: qtd,
+                venda: venda,
+                lucro: lucro
+            };
+
+            let vendas = JSON.parse(localStorage.getItem('vendasDNB')) || [];
+            vendas.unshift(novaVenda);
+            if (vendas.length > 5) vendas.pop();
+            
+            localStorage.setItem('vendasDNB', JSON.stringify(vendas));
+            carregarHistorico();
+        }
+
+        function carregarHistorico() {
+            const vendas = JSON.parse(localStorage.getItem('vendasDNB')) || [];
+            const lista = document.getElementById('listaVendas');
+            lista.innerHTML = vendas.map(v => `
+                <tr>
+                    <td>${v.data}</td>
+                    <td>${v.qtd}</td>
+                    <td class="val-final">${v.venda}</td>
+                    <td class="val-lucro">${v.lucro}</td>
+                </tr>
+            `).join('');
+        }
+
+        function limparHistorico() {
+            localStorage.removeItem('vendasDNB');
+            carregarHistorico();
+        }
+
+        // Carrega ao abrir a página
+        carregarHistorico();
     </script>
 </body>
 </html>
