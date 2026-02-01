@@ -103,7 +103,7 @@
             
             <div id="areaTroco" style="margin-top:15px; padding:10px; border: 1px dashed var(--purple); border-radius:10px; display:none;">
                 <label style="color:var(--purple); font-weight:bold;">🎁 BÔNUS DE FIDELIDADE</label>
-                <div id="txtTroco" style="font-weight:bold; color:var(--success); text-align:center;"></div>
+                <div id="txtTroco" style="font-weight:bold; color:var(--success); text-align:center; font-size: 0.85rem;"></div>
             </div>
 
             <button class="btn btn-purple" style="margin-top:15px;" onclick="alert('Para comprar, envie a quantidade no chat do servidor!')">🛒 COMPRAR NO SERVIDOR</button>
@@ -185,20 +185,33 @@
         const q = parseFloat(document.getElementById('simQtd').value) || 0;
         const vU = parseFloat(document.getElementById('cfgVenda').value);
         const precoCli = q * vU;
+        const resTax = document.getElementById('resTaxCli');
         
         document.getElementById('sPrecoCli').innerText = `R$ ${precoCli.toFixed(2).replace('.',',')}`;
-        document.getElementById('resTaxCli').innerText = `Gamepass Sugerida: ${Math.ceil(q / 0.7)} Robux`;
+        resTax.innerText = `Gamepass Sugerida: ${Math.ceil(q / 0.7)} Robux`;
         
-        // Bônus de troco
-        const proximoRedondo = Math.ceil(precoCli);
-        const trocoCentavos = proximoRedondo - precoCli;
-        const robuxBonus = Math.floor(trocoCentavos / vU);
         const areaTroco = document.getElementById('areaTroco');
         
-        if (robuxBonus >= 5 && q > 0) {
-            areaTroco.style.display = "block";
-            document.getElementById('txtTroco').innerText = `Pague R$ ${proximoRedondo.toFixed(2)} e leve +${robuxBonus} Robux de bônus!`;
-        } else { areaTroco.style.display = "none"; }
+        // TRAVA DE SEGURANÇA: Mínimo 400 Robux
+        if (q >= 400) {
+            const proximoRedondo = Math.ceil(precoCli);
+            const trocoCentavos = proximoRedondo - precoCli;
+            const robuxBonus = Math.floor(trocoCentavos / vU);
+            
+            // Só mostra se houver um bônus relevante (ex: 5 robux)
+            if (robuxBonus >= 5) {
+                areaTroco.style.display = "block";
+                const faltaReais = trocoCentavos.toFixed(2).replace('.', ',');
+                document.getElementById('txtTroco').innerText = `Faltam apenas R$ ${faltaReais} para completar R$ ${proximoRedondo.toFixed(2)} e você ganhar +${robuxBonus} Robux de bônus!`;
+            } else { 
+                areaTroco.style.display = "none"; 
+            }
+        } else {
+            areaTroco.style.display = "none";
+            if (q > 0) {
+                resTax.innerHTML = `Gamepass Sugerida: ${Math.ceil(q / 0.7)} Robux<br><span style="color:var(--danger); font-size:0.7rem; font-weight:bold;">⚠️ MÍNIMO PARA PEDIDO: 400 ROBUX</span>`;
+            }
+        }
     }
 
     // --- GESTÃO CORE ---
