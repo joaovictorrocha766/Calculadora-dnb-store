@@ -13,7 +13,6 @@
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); padding: 15px; display: flex; flex-direction: column; align-items: center; margin: 0; }
         .container { width: 100%; max-width: 650px; }
         
-        /* Menu de Abas */
         .tabs { display: flex; gap: 5px; margin-bottom: 15px; width: 100%; overflow-x: auto; padding: 5px; scrollbar-width: none; }
         .tab-btn { flex: 1; padding: 10px; background: var(--card); border: 1px solid #2d3748; color: #94a3b8; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.7rem; white-space: nowrap; }
         .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
@@ -22,38 +21,34 @@
         .content-section { display: none; }
         .content-section.active { display: block; }
 
-        /* Status Header */
         .status-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; width: 100%; }
         .status-badge { padding: 6px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: bold; }
         .open { background: rgba(34, 197, 94, 0.2); color: var(--success); border: 1px solid var(--success); }
         .closed { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); }
 
-        /* Alerta Estoque */
         .estoque-banner { padding: 10px; border-radius: 8px; text-align: center; font-size: 0.8rem; margin-bottom: 15px; font-weight: bold; }
         .estoque-ok { background: rgba(59, 130, 246, 0.1); color: var(--primary); border: 1px solid var(--primary); }
         .estoque-baixo { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); animation: blink 1s infinite; }
         @keyframes blink { 50% { opacity: 0.5; } }
 
-        /* Inputs */
         label { display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 5px; }
-        input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #2d3748; background: #0a0f1e; color: white; margin-bottom: 15px; box-sizing: border-box; }
+        input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #2d3748; background: #0a0f1e; color: white; margin-bottom: 15px; box-sizing: border-box; }
         
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 5px; }
         .btn-success { background: var(--success); color: white; }
         .btn-purple { background: var(--purple); color: white; }
         .btn-primary { background: var(--primary); color: white; }
 
-        /* Caixa Financeiro */
         .caixa-resumo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #1e293b; padding: 15px; border-radius: 12px; text-align: center; margin-top: 10px; }
         
-        /* Tabelas */
         table { width: 100%; font-size: 0.75rem; color: #cbd5e1; border-collapse: collapse; margin-top: 10px; }
         th { text-align: left; color: #94a3b8; padding: 8px; border-bottom: 1px solid #2d3748; }
         td { padding: 8px; border-bottom: 1px solid #1a202c; }
 
-        /* Mensagens */
         .msg-item { background: #0a0f1e; border: 1px solid #2d3748; padding: 12px; border-radius: 10px; margin-bottom: 10px; }
         .msg-item p { font-size: 0.8rem; margin: 0 0 10px 0; color: #cbd5e1; }
+
+        #qrcode { background: white; padding: 10px; border-radius: 8px; display: inline-block; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -68,12 +63,12 @@
         <button class="tab-btn active" onclick="openTab('vendas')">🛒 PDV</button>
         <button class="tab-btn" onclick="openTab('simulacao')">🧮 SIMULAÇÃO</button>
         <button class="tab-btn" onclick="openTab('mensagens')">📢 MSGS</button>
+        <button class="tab-btn" onclick="openTab('relatorios')">📊 RELATÓRIOS</button>
         <button class="tab-btn" onclick="openTab('ajustes')">⚙️ AJUSTES</button>
     </div>
 
     <div id="vendas" class="content-section active">
         <div id="bannerEstoque" class="estoque-banner estoque-ok">Saldo no Fornecedor: 0 Robux</div>
-        
         <div class="card">
             <label>Cliente (@)</label>
             <input type="text" id="nomeCliente" placeholder="Ex: @Marcos_Roblox">
@@ -81,11 +76,15 @@
             <input type="number" id="qtdRobux" oninput="calcPDV()">
             <div id="taxPDV" style="text-align:center; color:var(--warning); font-weight:bold; font-size:0.8rem; margin-bottom:15px;">Gamepass: 0</div>
             <button class="btn btn-success" onclick="salvarVenda()">💾 SALVAR E COPIAR RECIBO</button>
+            <button class="btn btn-primary" onclick="gerarPIX()">📱 GERAR QR CODE PIX</button>
+            <div id="areaPix" style="display:none; text-align:center; margin-top:15px;">
+                <div id="qrcode"></div>
+                <p style="font-size:0.7rem; color:var(--warning); margin-top:5px;">Aponte a câmera para o QR Code</p>
+            </div>
         </div>
-        
         <div class="caixa-resumo">
             <div style="grid-column: span 2; border-bottom: 1px solid #334155; padding-bottom: 8px;">
-                <label>LUCRO TOTAL</label><span id="lucroAcumulado" style="font-size: 1.4rem; font-weight: bold; color: var(--success);">R$ 0,00</span>
+                <label>LUCRO TOTAL ACUMULADO</label><span id="lucroAcumulado" style="font-size: 1.4rem; font-weight: bold; color: var(--success);">R$ 0,00</span>
             </div>
             <div><label>EU (50%)</label><span id="lEu" style="color:var(--primary); font-weight:bold;">R$ 0,00</span></div>
             <div><label>SÓCIO (50%)</label><span id="lSocio" style="color:var(--primary); font-weight:bold;">R$ 0,00</span></div>
@@ -94,15 +93,19 @@
 
     <div id="simulacao" class="content-section">
         <div class="card">
-            <h3>🧮 Simulador de Preço</h3>
-            <label>Quantidade desejada:</label>
-            <input type="number" id="simQtd" oninput="realizarSimulacao()">
-            <div style="background: #0a0f1e; padding: 15px; border-radius: 10px; font-size: 0.9rem;">
-                <p>Custo Fornecedor: <span id="sCusto" style="float:right">R$ 0,00</span></p>
-                <p>Preço Cliente: <span id="sVenda" style="float:right; color:var(--success); font-weight:bold;">R$ 0,00</span></p>
-                <hr style="border-color: #2d3748;">
-                <p>Lucro da Venda: <span id="sLucro" style="float:right">R$ 0,00</span></p>
-                <p>Divisão (Cada): <span id="sCada" style="float:right; color:var(--primary)">R$ 0,00</span></p>
+            <h3>🧮 Calculadoras</h3>
+            <label>Simular por Quantidade de Robux:</label>
+            <input type="number" id="simQtd" placeholder="Ex: 1000" oninput="realizarSimulacao()">
+            
+            <hr style="border:0; border-top:1px solid #2d3748; margin:20px 0;">
+            
+            <label>Calculadora Reversa (Valor da Gamepass):</label>
+            <input type="number" id="simRev" placeholder="Ex: 800" oninput="realizarReversa()">
+            
+            <div id="resSimula" style="background: #0a0f1e; padding: 15px; border-radius: 10px; font-size: 0.9rem;">
+                <p>O Cliente Recebe: <span id="sVenda" style="float:right; color:var(--success); font-weight:bold;">0 Robux</span></p>
+                <p>Preço para o Cliente: <span id="sPrecoCli" style="float:right">R$ 0,00</span></p>
+                <p>Seu Lucro Estimado: <span id="sLucro" style="float:right">R$ 0,00</span></p>
             </div>
             <button class="btn btn-purple" style="margin-top:15px;" onclick="copiarOrcamento()">📋 COPIAR ORÇAMENTO</button>
         </div>
@@ -110,48 +113,43 @@
 
     <div id="mensagens" class="content-section">
         <div class="card">
-            <div class="msg-item">
-                <p><strong>🌙 Horário Fechado:</strong> Informa que a entrega será feita na abertura.</p>
-                <button class="btn btn-primary" onclick="copiarMsg('fechado')">Copiar</button>
-            </div>
-            <div class="msg-item">
-                <p><strong>⏳ Aguardando PIX:</strong> Cobrança educada do comprovante.</p>
-                <button class="btn btn-primary" onclick="copiarMsg('pix')">Copiar</button>
-            </div>
-            <div class="msg-item">
-                <p><strong>⏳ Explicação Pendente:</strong> Explica os 3-7 dias do Roblox.</p>
-                <button class="btn btn-primary" onclick="copiarMsg('pendente')">Copiar</button>
-            </div>
+            <div class="msg-item"><p><strong>🌙 Horário Fechado</strong></p><button class="btn btn-primary" onclick="copiarMsg('fechado')">Copiar</button></div>
+            <div class="msg-item"><p><strong>⏳ Aguardando PIX</strong></p><button class="btn btn-primary" onclick="copiarMsg('pix')">Copiar</button></div>
+            <div class="msg-item"><p><strong>⏳ Explicação Pendente</strong></p><button class="btn btn-primary" onclick="copiarMsg('pendente')">Copiar</button></div>
+        </div>
+    </div>
+
+    <div id="relatorios" class="content-section">
+        <div class="card">
+            <h3>📊 Desempenho Mensal</h3>
+            <table id="tabelaMensal">
+                <thead><tr><th>Mês/Ano</th><th>Vendas</th><th>Lucro Total</th></tr></thead>
+                <tbody></tbody>
+            </table>
         </div>
     </div>
 
     <div id="ajustes" class="content-section">
         <div class="card">
-            <h3>📦 Controle de Estoque</h3>
-            <label>Saldo Atual no Fornecedor (Robux):</label>
-            <input type="number" id="cfgEstoque" value="0" oninput="saveCfg()">
-            <p style="font-size: 0.65rem; color: #94a3b8;">O sistema abate automaticamente a cada venda feita no PDV.</p>
-        </div>
-
-        <div class="card">
-            <h3>⚙️ Preços e Horários</h3>
+            <h3>⚙️ Configurações Base</h3>
+            <label>Chave PIX (Para o QR Code):</label>
+            <input type="text" id="cfgPix" placeholder="E-mail, CPF ou Telefone" oninput="saveCfg()">
             <label>Custo Unitário:</label><input type="number" id="cfgCusto" value="0.0335" step="0.0001" oninput="saveCfg()">
             <label>Venda Unitária:</label><input type="number" id="cfgVenda" value="0.0480" step="0.0001" oninput="saveCfg()">
+            <label>Saldo no Fornecedor:</label><input type="number" id="cfgEstoque" value="0" oninput="saveCfg()">
             <div style="display:flex; gap:10px;">
                 <div style="flex:1"><label>Abre:</label><input type="number" id="cfgAbre" value="8" oninput="saveCfg()"></div>
                 <div style="flex:1"><label>Fecha:</label><input type="number" id="cfgFecha" value="22" oninput="saveCfg()"></div>
             </div>
         </div>
-
         <div class="card">
-            <h3>🏆 DNB Points (Fidelidade)</h3>
+            <h3>🏆 Fidelidade</h3>
             <table id="tabelaFidelidade">
-                <thead><tr><th>Cliente</th><th>Robux Total</th><th>Pontos</th></tr></thead>
+                <thead><tr><th>Cliente</th><th>Total</th><th>Pontos</th></tr></thead>
                 <tbody></tbody>
             </table>
         </div>
-        
-        <button class="btn btn-danger" style="background:var(--danger); color:white; font-size:0.7rem;" onclick="localStorage.clear(); location.reload();">🗑️ RESETAR SISTEMA</button>
+        <button class="btn btn-danger" onclick="localStorage.clear(); location.reload();">🗑️ RESETAR SISTEMA</button>
     </div>
 </div>
 
@@ -163,146 +161,156 @@
         event.currentTarget.classList.add('active');
     }
 
-    function loadCfg() {
-        const c = JSON.parse(localStorage.getItem('dnb_config'));
-        if(c) {
-            document.getElementById('cfgCusto').value = c.custo;
-            document.getElementById('cfgVenda').value = c.venda;
-            document.getElementById('cfgAbre').value = c.abre;
-            document.getElementById('cfgFecha').value = c.fecha;
-            document.getElementById('cfgEstoque').value = c.estoque || 0;
-        }
-        renderFinancas();
-        atualizarStatus();
-        renderFidelidade();
-    }
-
     function saveCfg() {
         const config = {
             custo: document.getElementById('cfgCusto').value,
             venda: document.getElementById('cfgVenda').value,
             abre: document.getElementById('cfgAbre').value,
             fecha: document.getElementById('cfgFecha').value,
-            estoque: document.getElementById('cfgEstoque').value
+            estoque: document.getElementById('cfgEstoque').value,
+            pix: document.getElementById('cfgPix').value
         };
         localStorage.setItem('dnb_config', JSON.stringify(config));
         atualizarStatus();
+    }
+
+    function loadCfg() {
+        const c = JSON.parse(localStorage.getItem('dnb_config'));
+        if(c) {
+            document.getElementById('cfgCusto').value = c.custo || 0.0335;
+            document.getElementById('cfgVenda').value = c.venda || 0.0480;
+            document.getElementById('cfgAbre').value = c.abre || 8;
+            document.getElementById('cfgFecha').value = c.fecha || 22;
+            document.getElementById('cfgEstoque').value = c.estoque || 0;
+            document.getElementById('cfgPix').value = c.pix || "";
+        }
+        renderTudo();
+    }
+
+    function renderTudo() {
+        renderFinancas();
+        renderFidelidade();
         renderEstoque();
+        renderMensal();
     }
 
     function renderEstoque() {
-        const estoque = parseInt(document.getElementById('cfgEstoque').value) || 0;
-        const banner = document.getElementById('bannerEstoque');
-        banner.innerText = `Saldo no Fornecedor: ${estoque.toLocaleString()} Robux`;
-        
-        if(estoque < 1000) {
-            banner.className = "estoque-banner estoque-baixo";
-            banner.innerText += " (ESTOQUE BAIXO!)";
-        } else {
-            banner.className = "estoque-banner estoque-ok";
-        }
+        const est = parseInt(document.getElementById('cfgEstoque').value) || 0;
+        const b = document.getElementById('bannerEstoque');
+        b.innerText = `Saldo no Fornecedor: ${est.toLocaleString()} Robux`;
+        b.className = est < 1000 ? "estoque-banner estoque-baixo" : "estoque-banner estoque-ok";
+    }
+
+    function realizarSimulacao() {
+        const qtd = parseFloat(document.getElementById('simQtd').value) || 0;
+        const vU = parseFloat(document.getElementById('cfgVenda').value);
+        const cU = parseFloat(document.getElementById('cfgCusto').value);
+        document.getElementById('sVenda').innerText = `${qtd} Robux`;
+        document.getElementById('sPrecoCli').innerText = `R$ ${(qtd * vU).toFixed(2)}`;
+        document.getElementById('sLucro').innerText = `R$ ${(qtd * (vU - cU)).toFixed(2)}`;
+    }
+
+    function realizarReversa() {
+        const pass = parseFloat(document.getElementById('simRev').value) || 0;
+        const recebe = Math.floor(pass * 0.7);
+        const vU = parseFloat(document.getElementById('cfgVenda').value);
+        const cU = parseFloat(document.getElementById('cfgCusto').value);
+        document.getElementById('sVenda').innerText = `${recebe} Robux`;
+        document.getElementById('sPrecoCli').innerText = `R$ ${(recebe * vU).toFixed(2)}`;
+        document.getElementById('sLucro').innerText = `R$ ${(recebe * (vU - cU)).toFixed(2)}`;
     }
 
     function salvarVenda() {
         const qtd = parseFloat(document.getElementById('qtdRobux').value);
         const cli = document.getElementById('nomeCliente').value || "Cliente";
-        let estoque = parseInt(document.getElementById('cfgEstoque').value) || 0;
-
-        if(!qtd) return alert("Insira a quantidade!");
-        if(qtd > estoque) return alert("Erro: Estoque insuficiente no fornecedor!");
+        let est = parseInt(document.getElementById('cfgEstoque').value);
+        if(!qtd || qtd > est) return alert("Erro: Quantidade inválida ou sem estoque!");
 
         const cU = parseFloat(document.getElementById('cfgCusto').value);
         const vU = parseFloat(document.getElementById('cfgVenda').value);
         const vTot = (qtd * vU).toFixed(2);
         const lTot = (vTot - (qtd * cU)).toFixed(2);
-        const prot = "DNB-" + Math.floor(Math.random() * 999999);
-
-        // Salvar Venda
-        const venda = { prot, cli, qtd, vTot, lTot, data: new Date().toLocaleDateString() };
-        let db = JSON.parse(localStorage.getItem('dnb_db')) || [];
-        db.unshift(venda);
+        
+        const db = JSON.parse(localStorage.getItem('dnb_db')) || [];
+        db.unshift({ cli, qtd, vTot, lTot, date: new Date().toISOString() });
         localStorage.setItem('dnb_db', JSON.stringify(db));
 
-        // Abater Estoque
-        document.getElementById('cfgEstoque').value = estoque - qtd;
+        document.getElementById('cfgEstoque').value = est - qtd;
         saveCfg();
-
-        navigator.clipboard.writeText(`💎 *DNB STORE*\n\n🆔 *PROT:* ${prot}\n👤 *CLIENTE:* ${cli}\n📦 *PRODUTO:* ${qtd} Robux\n💰 *VALOR:* R$ ${vTot}\n✅ *STATUS:* CONCLUÍDO`);
-        
-        alert("Venda Salva! Estoque atualizado e Recibo copiado.");
         document.getElementById('qtdRobux').value = "";
-        renderFinancas();
-        renderFidelidade();
+        renderTudo();
+        alert("Venda Registrada!");
     }
 
-    function renderFidelidade() {
+    function renderMensal() {
         const db = JSON.parse(localStorage.getItem('dnb_db')) || [];
-        const pontos = {};
+        const mensal = {};
         db.forEach(v => {
-            const nome = v.cli.toLowerCase().trim();
-            pontos[nome] = (pontos[nome] || 0) + parseFloat(v.qtd);
+            const d = new Date(v.date);
+            const key = `${d.getMonth()+1}/${d.getFullYear()}`;
+            if(!mensal[key]) mensal[key] = { q: 0, l: 0 };
+            mensal[key].q++; mensal[key].l += parseFloat(v.lTot);
         });
-
-        const tbody = document.querySelector("#tabelaFidelidade tbody");
+        const tbody = document.querySelector("#tabelaMensal tbody");
         tbody.innerHTML = "";
-        for (let cli in pontos) {
-            const totalRobux = pontos[cli];
-            const dnbPoints = Math.floor(totalRobux / 1000);
-            tbody.innerHTML += `<tr><td>${cli}</td><td>${totalRobux}</td><td style="color:var(--purple); font-weight:bold;">${dnbPoints} pts</td></tr>`;
+        for(let k in mensal) {
+            tbody.innerHTML += `<tr><td>${k}</td><td>${mensal[k].q}</td><td style="color:var(--success)">R$ ${mensal[k].l.toFixed(2)}</td></tr>`;
         }
     }
 
-    function realizarSimulacao() {
-        const qtd = parseFloat(document.getElementById('simQtd').value) || 0;
-        const cU = parseFloat(document.getElementById('cfgCusto').value);
-        const vU = parseFloat(document.getElementById('cfgVenda').value);
-        const lucro = (qtd * vU) - (qtd * cU);
-        document.getElementById('sCusto').innerText = `R$ ${(qtd * cU).toFixed(2)}`;
-        document.getElementById('sVenda').innerText = `R$ ${(qtd * vU).toFixed(2)}`;
-        document.getElementById('sLucro').innerText = `R$ ${lucro.toFixed(2)}`;
-        document.getElementById('sCada').innerText = `R$ ${(lucro/2).toFixed(2)}`;
+    function gerarPIX() {
+        const chave = document.getElementById('cfgPix').value;
+        if(!chave) return alert("Configure sua chave PIX nos Ajustes primeiro!");
+        document.getElementById('areaPix').style.display = "block";
+        const qrDiv = document.getElementById('qrcode');
+        qrDiv.innerHTML = "";
+        new QRCode(qrDiv, { text: chave, width: 128, height: 128 });
     }
 
-    function copiarOrcamento() {
-        const qtd = document.getElementById('simQtd').value;
-        const valor = document.getElementById('sVenda').innerText;
-        navigator.clipboard.writeText(`💎 *DNB STORE - ORÇAMENTO*\n\n📦 *PRODUTO:* ${qtd} Robux\n💰 *VALOR:* ${valor}\n\n✅ *Garantia e Suporte Oficial!*`);
-        alert("Orçamento copiado!");
-    }
-
+    // Funções de apoio (Finanças, Fidelidade, Status, Mensagens) permanecem as mesmas logicamente
     function renderFinancas() {
         const db = JSON.parse(localStorage.getItem('dnb_db')) || [];
-        let total = 0;
-        db.forEach(v => total += parseFloat(v.lTot));
-        document.getElementById('lucroAcumulado').innerText = `R$ ${total.toFixed(2)}`;
-        document.getElementById('lEu').innerText = `R$ ${(total/2).toFixed(2)}`;
-        document.getElementById('lSocio').innerText = `R$ ${(total/2).toFixed(2)}`;
+        let t = 0; db.forEach(v => t += parseFloat(v.lTot));
+        document.getElementById('lucroAcumulado').innerText = `R$ ${t.toFixed(2)}`;
+        document.getElementById('lEu').innerText = `R$ ${(t/2).toFixed(2)}`;
+        document.getElementById('lSocio').innerText = `R$ ${(t/2).toFixed(2)}`;
     }
-
+    function renderFidelidade() {
+        const db = JSON.parse(localStorage.getItem('dnb_db')) || [];
+        const pts = {};
+        db.forEach(v => { const n = v.cli.toLowerCase(); pts[n] = (pts[n] || 0) + parseFloat(v.qtd); });
+        const tbody = document.querySelector("#tabelaFidelidade tbody");
+        tbody.innerHTML = "";
+        for(let n in pts) tbody.innerHTML += `<tr><td>${n}</td><td>${pts[n]}</td><td>${Math.floor(pts[n]/1000)} pts</td></tr>`;
+    }
     function atualizarStatus() {
-        const agora = new Date().getHours();
-        const abre = parseInt(document.getElementById('cfgAbre').value);
-        const fecha = parseInt(document.getElementById('cfgFecha').value);
-        const status = document.getElementById('statusLoja');
-        if(agora >= abre && agora < fecha) { status.innerText = "● ABERTA"; status.className = "status-badge open"; }
-        else { status.innerText = "● FECHADA"; status.className = "status-badge closed"; }
-        renderEstoque();
+        const h = new Date().getHours();
+        const a = parseInt(document.getElementById('cfgAbre').value);
+        const f = parseInt(document.getElementById('cfgFecha').value);
+        const s = document.getElementById('statusLoja');
+        if(h >= a && h < f) { s.innerText = "● ABERTA"; s.className = "status-badge open"; }
+        else { s.innerText = "● FECHADA"; s.className = "status-badge closed"; }
     }
-
     function calcPDV() {
-        const qtd = document.getElementById('qtdRobux').value;
-        document.getElementById('taxPDV').innerText = `Gamepass Sugerida: ${Math.ceil(qtd / 0.7)} Robux`;
+        const q = document.getElementById('qtdRobux').value;
+        document.getElementById('taxPDV').innerText = `Gamepass Sugerida: ${Math.ceil(q / 0.7)} Robux`;
     }
-
     function copiarMsg(tipo) {
-        let t = ""; const abre = document.getElementById('cfgAbre').value;
-        if(tipo === 'fechado') t = `🌙 *DNB STORE*\n\nNosso setor de entregas está pausado agora. Seu pedido foi registrado e será enviado prioritariamente às *${abre}:00h*!`;
-        if(tipo === 'pix') t = `⏳ *DNB STORE*\n\nAguardamos o envio do comprovante para liberar seu pedido! Se tiver dúvidas, estou aqui.`;
-        if(tipo === 'pendente') t = `⏳ *SOBRE O PRAZO*\n\nOs Robux ficam 'Pendentes' por *3 a 7 dias* antes de entrarem no saldo principal. Esse é o padrão do Roblox!`;
+        let t = ""; const a = document.getElementById('cfgAbre').value;
+        if(tipo === 'fechado') t = `🌙 *DNB STORE*\n\nSetor de entregas pausado. Seu pedido será enviado às *${a}:00h*!`;
+        if(tipo === 'pix') t = `⏳ *DNB STORE*\n\nAguardamos o comprovante para liberar seu pedido!`;
+        if(tipo === 'pendente') t = `⏳ *SOBRE O PRAZO*\n\nRobux via Gamepass ficam 'Pendentes' por *3 a 7 dias*. É o padrão do Roblox!`;
         navigator.clipboard.writeText(t); alert("Copiado!");
+    }
+    function copiarOrcamento() {
+        const q = document.getElementById('sVenda').innerText;
+        const v = document.getElementById('sPrecoCli').innerText;
+        navigator.clipboard.writeText(`💎 *DNB STORE - ORÇAMENTO*\n\n📦 *PRODUTO:* ${q}\n💰 *VALOR:* ${v}\n\n✅ *Entrega garantida!*`);
+        alert("Copiado!");
     }
 
     window.onload = loadCfg;
+    setInterval(atualizarStatus, 60000);
 </script>
 </body>
 </html>
