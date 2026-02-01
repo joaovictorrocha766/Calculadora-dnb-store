@@ -51,13 +51,15 @@
 
         #qrcode { background: white; padding: 10px; border-radius: 8px; display: inline-block; margin-top: 10px; }
 
-        .log-vendas { max-height: 150px; overflow-y: auto; margin-top: 10px; border-top: 1px solid #2d3748; padding-top: 10px; }
-        .log-item { font-size: 0.7rem; padding: 5px 0; display: flex; justify-content: space-between; border-bottom: 1px solid #1e293b; }
+        .log-vendas { max-height: 250px; overflow-y: auto; margin-top: 10px; border-top: 1px solid #2d3748; padding-top: 10px; }
+        .log-item { font-size: 0.7rem; padding: 8px 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; }
 
-        /* Estilo da Barra de Metas */
         .meta-container { margin-bottom: 15px; background: #1e293b; padding: 12px; border-radius: 12px; border: 1px solid #334155; }
         .meta-track { background: #0a0f1e; height: 8px; border-radius: 4px; overflow: hidden; margin-top: 8px; }
         .meta-bar { background: var(--success); height: 100%; width: 0%; transition: width 0.5s ease; }
+        
+        .stats-mini { display: flex; gap: 10px; margin-bottom: 15px; }
+        .stat-box { flex: 1; background: rgba(59, 130, 246, 0.1); border: 1px solid var(--primary); padding: 8px; border-radius: 8px; text-align: center; font-size: 0.7rem; }
     </style>
 </head>
 <body>
@@ -83,6 +85,11 @@
                 <span id="txtMeta">R$ 0,00 / R$ 50,00</span>
             </div>
             <div class="meta-track"><div id="barraMeta" class="meta-bar"></div></div>
+        </div>
+
+        <div class="stats-mini">
+            <div class="stat-box">HOJE: <br><strong id="robuxHoje">0 R$</strong></div>
+            <div class="stat-box" style="border-color: var(--purple);">TOTAL: <br><strong id="robuxTotal">0 R$</strong></div>
         </div>
 
         <div id="bannerEstoque" class="estoque-banner estoque-ok">Saldo no Fornecedor: 0 Robux</div>
@@ -229,7 +236,8 @@
         const lTot = (qtd * (vU - cU)).toFixed(2);
         
         const db = JSON.parse(localStorage.getItem('dnb_db')) || [];
-        db.unshift({ cli, qtd, lTot, date: new Date().toISOString(), retirada: false });
+        // Adicionado 'entregue: false' para o novo sistema
+        db.unshift({ cli, qtd, lTot, date: new Date().toISOString(), retirada: false, entregue: false });
         localStorage.setItem('dnb_db', JSON.stringify(db));
 
         document.getElementById('cfgEstoque').value = est - qtd;
@@ -252,15 +260,51 @@
         const db = JSON.parse(localStorage.getItem('dnb_db')) || [];
         const hoje = new Date().toLocaleDateString();
         let lucroHoje = 0;
+        let robuxHoje = 0;
+        let robuxTotal = 0;
+
         db.forEach(v => {
+            robuxTotal += parseFloat(v.qtd);
             if(new Date(v.date).toLocaleDateString() === hoje) {
                 lucroHoje += parseFloat(v.lTot);
+                robuxHoje += parseFloat(v.qtd);
             }
         });
+
         const meta = 50.00;
         const porc = Math.min((lucroHoje / meta) * 100, 100);
         document.getElementById('txtMeta').innerText = `R$ ${lucroHoje.toFixed(2)} / R$ ${meta.toFixed(2)}`;
         document.getElementById('barraMeta').style.width = porc + "%";
+        
+        // Atualiza estatísticas de volume de Robux
+        document.getElementById('robuxHoje').innerText = robuxHoje.toLocaleString() + " R$";
+        document.getElementById('robuxTotal').innerText = robuxTotal.toLocaleString() + " R$";
+    }
+
+    function renderLog() {
+        const db = JSON.parse(localStorage.getItem('dnb_db')) || [];
+        const log = document.getElementById('logVendas');
+        log.innerHTML = "<strong>Últimas Vendas & Status:</strong>";
+        
+        db.slice(0, 8).forEach((v, index) => {
+            const statusIcon = v.entregue ? "✅" : "⏳";
+            const statusColor = v.entregue ? "var(--success)" : "var(--warning)";
+            
+            log.innerHTML += `
+                <div class="log-item">
+                    <span>${v.cli} (${v.qtd} R$)</span>
+                    <span onclick="alternarEntrega(${index})" style="cursor:pointer; color:${statusColor}; font-weight:bold; font-size:0.6rem; border:1px solid ${statusColor}; padding:2px 5px; border-radius:4px;">
+                        ${statusIcon} ${v.entregue ? 'ENTREGUE' : 'PENDENTE'}
+                    </span>
+                </div>`;
+        });
+    }
+
+    function alternarEntrega(index) {
+        const db = JSON.parse(localStorage.getItem('dnb_db')) || [];
+        db[index].entregue = !db[index].entregue;
+        localStorage.setItem('dnb_db', JSON.stringify(db));
+        renderLog();
     }
 
     function realizarSimulacao() {
@@ -278,7 +322,6 @@
         sLucro.style.color = margem < 0.10 ? 'var(--danger)' : 'var(--text)';
         document.getElementById('sCada').innerText = `R$ ${(lucro/2).toFixed(2)}`;
 
-        // Calculadora de Troco em Robux (Bônus)
         const proximoRedondo = Math.ceil(precoCli);
         const trocoCentavos = proximoRedondo - precoCli;
         const robuxBonus = Math.floor(trocoCentavos / vU);
@@ -290,15 +333,6 @@
         } else {
             areaTroco.style.display = "none";
         }
-    }
-
-    function renderLog() {
-        const db = JSON.parse(localStorage.getItem('dnb_db')) || [];
-        const log = document.getElementById('logVendas');
-        log.innerHTML = "<strong>Últimas Vendas:</strong>";
-        db.slice(0, 5).forEach(v => {
-            log.innerHTML += `<div class="log-item"><span>${v.cli} (${v.qtd} R$)</span><span>R$ ${v.lTot}</span></div>`;
-        });
     }
 
     function renderMensal() {
