@@ -28,6 +28,12 @@
         .open { background: rgba(34, 197, 94, 0.2); color: var(--success); border: 1px solid var(--success); }
         .closed { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); }
 
+        /* Alerta Estoque */
+        .estoque-banner { padding: 10px; border-radius: 8px; text-align: center; font-size: 0.8rem; margin-bottom: 15px; font-weight: bold; }
+        .estoque-ok { background: rgba(59, 130, 246, 0.1); color: var(--primary); border: 1px solid var(--primary); }
+        .estoque-baixo { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.5; } }
+
         /* Inputs */
         label { display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 5px; }
         input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #2d3748; background: #0a0f1e; color: white; margin-bottom: 15px; box-sizing: border-box; }
@@ -40,6 +46,11 @@
         /* Caixa Financeiro */
         .caixa-resumo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #1e293b; padding: 15px; border-radius: 12px; text-align: center; margin-top: 10px; }
         
+        /* Tabelas */
+        table { width: 100%; font-size: 0.75rem; color: #cbd5e1; border-collapse: collapse; margin-top: 10px; }
+        th { text-align: left; color: #94a3b8; padding: 8px; border-bottom: 1px solid #2d3748; }
+        td { padding: 8px; border-bottom: 1px solid #1a202c; }
+
         /* Mensagens */
         .msg-item { background: #0a0f1e; border: 1px solid #2d3748; padding: 12px; border-radius: 10px; margin-bottom: 10px; }
         .msg-item p { font-size: 0.8rem; margin: 0 0 10px 0; color: #cbd5e1; }
@@ -61,6 +72,8 @@
     </div>
 
     <div id="vendas" class="content-section active">
+        <div id="bannerEstoque" class="estoque-banner estoque-ok">Saldo no Fornecedor: 0 Robux</div>
+        
         <div class="card">
             <label>Cliente (@)</label>
             <input type="text" id="nomeCliente" placeholder="Ex: @Marcos_Roblox">
@@ -114,23 +127,35 @@
 
     <div id="ajustes" class="content-section">
         <div class="card">
-            <h3>⚙️ Configurações do Sistema</h3>
-            <label>Custo por 1 Robux (Fornecedor):</label>
-            <input type="number" id="cfgCusto" value="0.0335" step="0.0001" oninput="saveCfg()">
-            <label>Venda por 1 Robux (Cliente):</label>
-            <input type="number" id="cfgVenda" value="0.0480" step="0.0001" oninput="saveCfg()">
-            <hr style="border-color: #2d3748; margin-bottom: 15px;">
-            <div class="grid" style="display:flex; gap:10px;">
-                <div style="flex:1"><label>Abre às:</label><input type="number" id="cfgAbre" value="8" oninput="saveCfg()"></div>
-                <div style="flex:1"><label>Fecha às:</label><input type="number" id="cfgFecha" value="22" oninput="saveCfg()"></div>
-            </div>
-            <button class="btn btn-danger" style="background:var(--danger); color:white; font-size:0.7rem;" onclick="localStorage.clear(); location.reload();">🗑️ RESETAR TODO O SISTEMA</button>
+            <h3>📦 Controle de Estoque</h3>
+            <label>Saldo Atual no Fornecedor (Robux):</label>
+            <input type="number" id="cfgEstoque" value="0" oninput="saveCfg()">
+            <p style="font-size: 0.65rem; color: #94a3b8;">O sistema abate automaticamente a cada venda feita no PDV.</p>
         </div>
+
+        <div class="card">
+            <h3>⚙️ Preços e Horários</h3>
+            <label>Custo Unitário:</label><input type="number" id="cfgCusto" value="0.0335" step="0.0001" oninput="saveCfg()">
+            <label>Venda Unitária:</label><input type="number" id="cfgVenda" value="0.0480" step="0.0001" oninput="saveCfg()">
+            <div style="display:flex; gap:10px;">
+                <div style="flex:1"><label>Abre:</label><input type="number" id="cfgAbre" value="8" oninput="saveCfg()"></div>
+                <div style="flex:1"><label>Fecha:</label><input type="number" id="cfgFecha" value="22" oninput="saveCfg()"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>🏆 DNB Points (Fidelidade)</h3>
+            <table id="tabelaFidelidade">
+                <thead><tr><th>Cliente</th><th>Robux Total</th><th>Pontos</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        
+        <button class="btn btn-danger" style="background:var(--danger); color:white; font-size:0.7rem;" onclick="localStorage.clear(); location.reload();">🗑️ RESETAR SISTEMA</button>
     </div>
 </div>
 
 <script>
-    // Navegação
     function openTab(id) {
         document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -138,7 +163,6 @@
         event.currentTarget.classList.add('active');
     }
 
-    // Carregar configurações salvas
     function loadCfg() {
         const c = JSON.parse(localStorage.getItem('dnb_config'));
         if(c) {
@@ -146,9 +170,11 @@
             document.getElementById('cfgVenda').value = c.venda;
             document.getElementById('cfgAbre').value = c.abre;
             document.getElementById('cfgFecha').value = c.fecha;
+            document.getElementById('cfgEstoque').value = c.estoque || 0;
         }
         renderFinancas();
         atualizarStatus();
+        renderFidelidade();
     }
 
     function saveCfg() {
@@ -156,54 +182,83 @@
             custo: document.getElementById('cfgCusto').value,
             venda: document.getElementById('cfgVenda').value,
             abre: document.getElementById('cfgAbre').value,
-            fecha: document.getElementById('cfgFecha').value
+            fecha: document.getElementById('cfgFecha').value,
+            estoque: document.getElementById('cfgEstoque').value
         };
         localStorage.setItem('dnb_config', JSON.stringify(config));
         atualizarStatus();
+        renderEstoque();
     }
 
-    // Lógica PDV
-    function calcPDV() {
-        const qtd = document.getElementById('qtdRobux').value;
-        document.getElementById('taxPDV').innerText = `Gamepass Sugerida: ${Math.ceil(qtd / 0.7)} Robux`;
+    function renderEstoque() {
+        const estoque = parseInt(document.getElementById('cfgEstoque').value) || 0;
+        const banner = document.getElementById('bannerEstoque');
+        banner.innerText = `Saldo no Fornecedor: ${estoque.toLocaleString()} Robux`;
+        
+        if(estoque < 1000) {
+            banner.className = "estoque-banner estoque-baixo";
+            banner.innerText += " (ESTOQUE BAIXO!)";
+        } else {
+            banner.className = "estoque-banner estoque-ok";
+        }
     }
 
     function salvarVenda() {
         const qtd = parseFloat(document.getElementById('qtdRobux').value);
         const cli = document.getElementById('nomeCliente').value || "Cliente";
+        let estoque = parseInt(document.getElementById('cfgEstoque').value) || 0;
+
         if(!qtd) return alert("Insira a quantidade!");
+        if(qtd > estoque) return alert("Erro: Estoque insuficiente no fornecedor!");
 
         const cU = parseFloat(document.getElementById('cfgCusto').value);
         const vU = parseFloat(document.getElementById('cfgVenda').value);
-
         const vTot = (qtd * vU).toFixed(2);
         const lTot = (vTot - (qtd * cU)).toFixed(2);
         const prot = "DNB-" + Math.floor(Math.random() * 999999);
 
+        // Salvar Venda
         const venda = { prot, cli, qtd, vTot, lTot, data: new Date().toLocaleDateString() };
         let db = JSON.parse(localStorage.getItem('dnb_db')) || [];
         db.unshift(venda);
         localStorage.setItem('dnb_db', JSON.stringify(db));
 
+        // Abater Estoque
+        document.getElementById('cfgEstoque').value = estoque - qtd;
+        saveCfg();
+
         navigator.clipboard.writeText(`💎 *DNB STORE*\n\n🆔 *PROT:* ${prot}\n👤 *CLIENTE:* ${cli}\n📦 *PRODUTO:* ${qtd} Robux\n💰 *VALOR:* R$ ${vTot}\n✅ *STATUS:* CONCLUÍDO`);
         
-        alert("Venda Salva! Recibo copiado.");
+        alert("Venda Salva! Estoque atualizado e Recibo copiado.");
         document.getElementById('qtdRobux').value = "";
         renderFinancas();
+        renderFidelidade();
     }
 
-    // Simulação
+    function renderFidelidade() {
+        const db = JSON.parse(localStorage.getItem('dnb_db')) || [];
+        const pontos = {};
+        db.forEach(v => {
+            const nome = v.cli.toLowerCase().trim();
+            pontos[nome] = (pontos[nome] || 0) + parseFloat(v.qtd);
+        });
+
+        const tbody = document.querySelector("#tabelaFidelidade tbody");
+        tbody.innerHTML = "";
+        for (let cli in pontos) {
+            const totalRobux = pontos[cli];
+            const dnbPoints = Math.floor(totalRobux / 1000);
+            tbody.innerHTML += `<tr><td>${cli}</td><td>${totalRobux}</td><td style="color:var(--purple); font-weight:bold;">${dnbPoints} pts</td></tr>`;
+        }
+    }
+
     function realizarSimulacao() {
         const qtd = parseFloat(document.getElementById('simQtd').value) || 0;
         const cU = parseFloat(document.getElementById('cfgCusto').value);
         const vU = parseFloat(document.getElementById('cfgVenda').value);
-
-        const custo = (qtd * cU);
-        const venda = (qtd * vU);
-        const lucro = venda - custo;
-
-        document.getElementById('sCusto').innerText = `R$ ${custo.toFixed(2)}`;
-        document.getElementById('sVenda').innerText = `R$ ${venda.toFixed(2)}`;
+        const lucro = (qtd * vU) - (qtd * cU);
+        document.getElementById('sCusto').innerText = `R$ ${(qtd * cU).toFixed(2)}`;
+        document.getElementById('sVenda').innerText = `R$ ${(qtd * vU).toFixed(2)}`;
         document.getElementById('sLucro').innerText = `R$ ${lucro.toFixed(2)}`;
         document.getElementById('sCada').innerText = `R$ ${(lucro/2).toFixed(2)}`;
     }
@@ -215,7 +270,6 @@
         alert("Orçamento copiado!");
     }
 
-    // Financeiro
     function renderFinancas() {
         const db = JSON.parse(localStorage.getItem('dnb_db')) || [];
         let total = 0;
@@ -225,29 +279,27 @@
         document.getElementById('lSocio').innerText = `R$ ${(total/2).toFixed(2)}`;
     }
 
-    // Status e Mensagens
     function atualizarStatus() {
         const agora = new Date().getHours();
         const abre = parseInt(document.getElementById('cfgAbre').value);
         const fecha = parseInt(document.getElementById('cfgFecha').value);
         const status = document.getElementById('statusLoja');
+        if(agora >= abre && agora < fecha) { status.innerText = "● ABERTA"; status.className = "status-badge open"; }
+        else { status.innerText = "● FECHADA"; status.className = "status-badge closed"; }
+        renderEstoque();
+    }
 
-        if(agora >= abre && agora < fecha) {
-            status.innerText = "● ABERTA"; status.className = "status-badge open";
-        } else {
-            status.innerText = "● FECHADA"; status.className = "status-badge closed";
-        }
+    function calcPDV() {
+        const qtd = document.getElementById('qtdRobux').value;
+        document.getElementById('taxPDV').innerText = `Gamepass Sugerida: ${Math.ceil(qtd / 0.7)} Robux`;
     }
 
     function copiarMsg(tipo) {
-        let t = "";
-        const abre = document.getElementById('cfgAbre').value;
+        let t = ""; const abre = document.getElementById('cfgAbre').value;
         if(tipo === 'fechado') t = `🌙 *DNB STORE*\n\nNosso setor de entregas está pausado agora. Seu pedido foi registrado e será enviado prioritariamente às *${abre}:00h*!`;
         if(tipo === 'pix') t = `⏳ *DNB STORE*\n\nAguardamos o envio do comprovante para liberar seu pedido! Se tiver dúvidas, estou aqui.`;
         if(tipo === 'pendente') t = `⏳ *SOBRE O PRAZO*\n\nOs Robux ficam 'Pendentes' por *3 a 7 dias* antes de entrarem no saldo principal. Esse é o padrão do Roblox!`;
-        
-        navigator.clipboard.writeText(t);
-        alert("Copiado!");
+        navigator.clipboard.writeText(t); alert("Copiado!");
     }
 
     window.onload = loadCfg;
