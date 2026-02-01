@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNB STORE | Gestão & Atendimento</title>
+    <title>DNB STORE | Painel de Controle</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root {
@@ -13,106 +13,102 @@
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); padding: 20px; display: flex; flex-direction: column; align-items: center; margin: 0; }
         .container { width: 100%; max-width: 650px; }
         
-        .tabs { display: flex; gap: 5px; margin-bottom: 15px; width: 100%; overflow-x: auto; padding-bottom: 5px; }
-        .tab-btn { flex: 1; padding: 10px; background: var(--card); border: 1px solid #2d3748; color: #94a3b8; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.75rem; white-space: nowrap; }
-        .tab-btn.active { background: var(--primary); color: white; }
+        /* Abas Estilizadas */
+        .tabs { display: flex; gap: 5px; margin-bottom: 15px; width: 100%; overflow-x: auto; padding: 5px; scrollbar-width: none; }
+        .tab-btn { flex: 1; padding: 10px 15px; background: var(--card); border: 1px solid #2d3748; color: #94a3b8; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.7rem; white-space: nowrap; transition: 0.3s; }
+        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 0 10px rgba(59, 130, 246, 0.4); }
 
-        .card { background: var(--card); padding: 20px; border-radius: 16px; border: 1px solid #2d3748; margin-bottom: 15px; }
-        .content-section { display: none; }
+        .card { background: var(--card); padding: 20px; border-radius: 16px; border: 1px solid #2d3748; margin-bottom: 15px; position: relative; }
+        .content-section { display: none; animation: fadeIn 0.3s ease; }
         .content-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; display: inline-block; margin-bottom: 10px; }
-        .open { background: rgba(34, 197, 94, 0.2); color: var(--success); border: 1px solid var(--success); }
-        .closed { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); }
+        /* Badge de Status */
+        .status-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px; }
+        .status-badge { padding: 6px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        .open { background: rgba(34, 197, 94, 0.15); color: var(--success); border: 1px solid var(--success); }
+        .closed { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid var(--danger); }
 
-        input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #2d3748; background: #0a0f1e; color: white; box-sizing: border-box; margin-bottom: 10px; }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; }
-        .btn-success { background: var(--success); color: white; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-purple { background: var(--purple); color: white; }
-        .btn-outline { background: transparent; border: 1px solid #2d3748; color: #94a3b8; font-size: 0.8rem; }
-
-        .msg-box { background: #0a0f1e; padding: 15px; border-radius: 8px; border: 1px dotted #3b82f6; margin-bottom: 10px; position: relative; }
-        .msg-text { font-size: 0.85rem; color: #cbd5e1; line-height: 1.4; }
+        /* Estilo das Mensagens */
+        .msg-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .msg-card { background: #0a0f1e; padding: 15px; border-radius: 10px; border: 1px solid #2d3748; transition: 0.2s; }
+        .msg-card:hover { border-color: var(--primary); }
+        .msg-header { font-size: 0.7rem; color: var(--primary); font-weight: bold; margin-bottom: 5px; display: flex; justify-content: space-between; }
+        .msg-body { font-size: 0.8rem; color: #cbd5e1; line-height: 1.4; margin-bottom: 10px; }
+        
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem; }
+        .btn-copy { background: rgba(59, 130, 246, 0.1); color: var(--primary); border: 1px solid var(--primary); }
+        .btn-copy:active { background: var(--primary); color: white; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="statusLoja" class="status-badge">Verificando horário...</div>
+    <div class="status-header">
+        <div style="font-weight: bold; font-size: 1.2rem; color: var(--primary);">DNB STORE 💎</div>
+        <div id="statusLoja" class="status-badge">Verificando...</div>
+    </div>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="openTab('vendas')">🛒 PDV</button>
-        <button class="tab-btn" onclick="openTab('simula')">🧮 Simulação</button>
-        <button class="tab-btn" onclick="openTab('mensagens')">📢 Mensagens</button>
-        <button class="tab-btn" onclick="openTab('busca')">🔍 Auditoria</button>
-        <button class="tab-btn" onclick="openTab('config')">⚙️ Ajustes</button>
+        <button class="tab-btn active" onclick="openTab('vendas')">🛒 VENDER</button>
+        <button class="tab-btn" onclick="openTab('simula')">🧮 CALCULAR</button>
+        <button class="tab-btn" onclick="openTab('mensagens')">📢 MENSAGENS</button>
+        <button class="tab-btn" onclick="openTab('config')">⚙️ AJUSTES</button>
     </div>
 
     <div id="vendas" class="content-section active">
         <div class="card">
-            <h2 style="margin:0; color:var(--primary);">DNB STORE</h2>
-            <label style="font-size: 0.7rem; color: #94a3b8;">Cliente e Quantidade</label>
-            <div style="display:flex; gap:10px;">
-                <input type="text" id="nomeCliente" placeholder="@Cliente">
-                <input type="number" id="qtdRobux" placeholder="Qtd" oninput="calcPDV()">
-            </div>
-            <button class="btn btn-success" onclick="salvarVenda()">💾 SALVAR E COPIAR RECIBO</button>
-        </div>
-    </div>
-
-    <div id="simula" class="content-section">
-        <div class="card">
-            <h3>🧮 Calculadora de Lucro</h3>
-            <input type="number" id="simQtd" placeholder="Qtd Robux" oninput="realizarSimulacao()">
-            <div id="resSimula" style="font-size: 0.9rem; background: #0a0f1e; padding: 15px; border-radius: 10px;">
-                <p>Custo (Fornecedor): <span id="sCusto">R$ 0,00</span></p>
-                <p>Venda (Cliente): <span id="sVenda" style="color:var(--success); font-weight:bold;">R$ 0,00</span></p>
-                <hr style="border:0; border-top:1px solid #2d3748;">
-                <p>Lucro Total: <span id="sLucro">R$ 0,00</span></p>
-                <p>Sua Parte (50%): <span id="sJoao" style="color:var(--primary);">R$ 0,00</span></p>
-                <p>Parte Sócio (50%): <span id="sSocio" style="color:var(--primary);">R$ 0,00</span></p>
-            </div>
-            <button class="btn btn-purple" onclick="copiarOrcamento()">📋 Copiar Orçamento</button>
+            <input type="text" id="nomeCliente" placeholder="@Usuário do Cliente" style="width:100%; padding:12px; background:#0a0f1e; border:1px solid #2d3748; color:white; border-radius:8px; margin-bottom:10px;">
+            <input type="number" id="qtdRobux" placeholder="Quantidade de Robux" oninput="calcPDV()" style="width:100%; padding:12px; background:#0a0f1e; border:1px solid #2d3748; color:white; border-radius:8px; margin-bottom:10px;">
+            <button class="btn" style="background:var(--success); color:white;" onclick="salvarVenda()">💾 FINALIZAR E COPIAR RECIBO</button>
         </div>
     </div>
 
     <div id="mensagens" class="content-section">
-        <div class="card">
-            <h3>📢 Respostas Rápidas</h3>
+        <div class="msg-grid">
             
-            <div class="msg-box">
-                <div class="msg-text"><strong>🌙 Horário Fechado:</strong><br>Olá! A DNB STORE recebeu seu pedido. No momento nosso setor de entregas está pausado. Retornaremos às <span class="h-abre">08:00</span> para processar seu envio!</div>
-                <button class="btn btn-outline" onclick="copiarTextoMsg('fechado')">Copiar Aviso</button>
+            <div class="msg-card">
+                <div class="msg-header"><span>PRIMEIRA COMPRA</span> <span>✨</span></div>
+                <div class="msg-body">"Seja bem-vindo(a) à DNB STORE! 💎 Vi que é sua primeira vez aqui. Nosso processo é manual e seguro. Você já sabe como criar a Gamepass ou precisa de um tutorial rápido?"</div>
+                <button class="btn btn-copy" onclick="copiarTxt('boasvindas')">Copiar Boas-vindas</button>
             </div>
 
-            <div class="msg-box">
-                <div class="msg-text"><strong>🎮 Como Comprar:</strong><br>Para receber, você precisa criar uma Gamepass no valor sugerido. Aceitamos PIX. O prazo de 'pendente' no Roblox é de 3 a 7 dias.</div>
-                <button class="btn btn-outline" onclick="copiarTextoMsg('como')">Copiar Instrução</button>
+            <div class="msg-card">
+                <div class="msg-header"><span>PIX COPIA E COLA</span> <span>💰</span></div>
+                <div class="msg-body">"Aqui está nossa chave PIX para facilitar seu pagamento. Após enviar, por favor anexe o comprovante para agilizarmos sua entrega!"</div>
+                <button class="btn btn-copy" onclick="copiarTxt('pix')">Copiar Texto PIX</button>
             </div>
 
-            <div class="msg-box">
-                <div class="msg-text"><strong>✅ Confirmação:</strong><br>Pagamento aprovado! Seus Robux já foram enviados. Confira seu histórico de pendentes no site oficial do Roblox.</div>
-                <button class="btn btn-outline" onclick="copiarTextoMsg('confirma')">Copiar Sucesso</button>
+            <div class="msg-card">
+                <div class="msg-header"><span>ESTOQUE BAIXO / URGÊNCIA</span> <span>🔥</span></div>
+                <div class="msg-body">"Nosso estoque de Robux para entrega imediata está baixando! Caso queira garantir o seu nesse valor de 0,048, recomendo fechar o pedido agora."</div>
+                <button class="btn btn-copy" onclick="copiarTxt('urgencia')">Copiar Urgência</button>
             </div>
+
+            <div class="msg-card">
+                <div class="msg-header"><span>EXPLICAÇÃO DOS 7 DIAS</span> <span>⏳</span></div>
+                <div class="msg-body">"O Roblox mudou o sistema de segurança. Agora, todo Robux comprado via Gamepass fica 'Pendente' por 3 a 7 dias antes de cair no seu saldo total. É um padrão global do jogo!"</div>
+                <button class="btn btn-copy" onclick="copiarTxt('pendente')">Copiar Explicação</button>
+            </div>
+
+            <div class="msg-card">
+                <div class="msg-header"><span>AVISO DE AUSÊNCIA RÁPIDA</span> <span>🏃</span></div>
+                <div class="msg-body">"Estou resolvendo uma entrega agora e já te respondo! Em 5 minutinhos já falo com você. Obrigado pela paciência! 🙏"</div>
+                <button class="btn btn-copy" onclick="copiarTxt('ausencia')">Copiar Aviso</button>
+            </div>
+
+            <div class="msg-card">
+                <div class="msg-header"><span>PEDIDO DE AVALIAÇÃO</span> <span>⭐</span></div>
+                <div class="msg-body">"Sua entrega foi concluída! 🚀 Se puder tirar um print do saldo pendente e nos avaliar, eu te dou um bônus de 5% na sua próxima compra!"</div>
+                <button class="btn btn-copy" onclick="copiarTxt('avaliacao')">Copiar Pós-Venda</button>
+            </div>
+
         </div>
     </div>
 
-    <div id="config" class="content-section">
-        <div class="card">
-            <h3>⚙️ Configurações</h3>
-            <label>Horário de Início (Ex: 08):</label>
-            <input type="number" id="hInicio" value="8">
-            <label>Horário de Término (Ex: 22):</label>
-            <input type="number" id="hFim" value="22">
-            <hr>
-            <label>Custo Unitário:</label><input type="number" id="confCusto" value="0.0335" step="0.0001">
-            <label>Venda Unitária:</label><input type="number" id="confVenda" value="0.0480" step="0.0001">
-        </div>
-        <button class="btn btn-primary" onclick="atualizarStatus()">💾 Salvar e Aplicar</button>
-    </div>
+    <div id="simula" class="content-section"> </div>
+    <div id="config" class="content-section"> </div>
 
-    <div id="busca" class="content-section"> </div>
 </div>
 
 <script>
@@ -123,63 +119,35 @@
         event.currentTarget.classList.add('active');
     }
 
-    function atualizarStatus() {
+    function atualizarHorario() {
         const agora = new Date().getHours();
-        const inicio = parseInt(document.getElementById('hInicio').value);
-        const fim = parseInt(document.getElementById('hFim').value);
         const status = document.getElementById('statusLoja');
-        
-        document.querySelectorAll('.h-abre').forEach(el => el.innerText = inicio + ":00");
-
-        if (agora >= inicio && agora < fim) {
-            status.innerText = "● LOJA ABERTA (ENTREGAS ATIVAS)";
+        // Horário da DNB STORE: 08:00 às 22:00
+        if(agora >= 8 && agora < 22) {
+            status.innerText = "● ABERTA PARA ENTREGAS";
             status.className = "status-badge open";
         } else {
-            status.innerText = "● LOJA FECHADA (APENAS PAGAMENTOS)";
+            status.innerText = "● APENAS PAGAMENTOS (FECHADA)";
             status.className = "status-badge closed";
         }
     }
 
-    function realizarSimulacao() {
-        const qtd = parseFloat(document.getElementById('simQtd').value) || 0;
-        const cU = parseFloat(document.getElementById('confCusto').value);
-        const vU = parseFloat(document.getElementById('confVenda').value);
-        const cT = qtd * cU; const vT = qtd * vU; const lT = vT - cT;
-
-        document.getElementById('sCusto').innerText = "R$ " + cT.toFixed(2);
-        document.getElementById('sVenda').innerText = "R$ " + vT.toFixed(2);
-        document.getElementById('sLucro').innerText = "R$ " + lT.toFixed(2);
-        document.getElementById('sJoao').innerText = "R$ " + (lT/2).toFixed(2);
-        document.getElementById('sSocio').innerText = "R$ " + (lT/2).toFixed(2);
+    function copiarTxt(tipo) {
+        let mapa = {
+            boasvindas: "Seja bem-vindo(a) à *DNB STORE*! 💎\n\nVi que é sua primeira vez aqui. Nosso processo é manual e totalmente seguro. Você já sabe como criar a Gamepass ou precisa que eu envie um tutorial rápido?",
+            pix: "💰 *DNB STORE - PAGAMENTO*\n\nSegue nossa chave PIX abaixo para facilitar:\n\n*CHAVE:* [COLOQUE SUA CHAVE AQUI]\n*NOME:* [SEU NOME]\n\nApós o envio, favor mandar o comprovante aqui! ✅",
+            urgencia: "🔥 *ESTOQUE LIMITADO*\n\nNosso estoque de Robux para entrega imediata está acabando! Para garantir esse valor promocional, recomendo fechar o pedido o quanto antes.",
+            pendente: "⏳ *SOBRE O PRAZO (ROBLOX)*\n\nO Roblox possui um sistema de segurança onde todo Robux via Gamepass fica 'Pendente' (Pending) por um prazo de *3 a 7 dias*. \n\nEsse prazo é do próprio Roblox e ninguém consegue pular, mas o envio por nossa parte é imediato! ✅",
+            ausencia: "🏃 *SÓ UM INSTANTE*\n\nEstou finalizando uma entrega agora e já te dou atenção! Em menos de 5 minutos já falo com você. Obrigado pela paciência! 🙏",
+            avaliacao: "🚀 *ENTREGA CONCLUÍDA*\n\nSeus Robux foram enviados! Se puder tirar um print e nos avaliar, você ganha um *DESCONTO ESPECIAL* na próxima compra! 💎✨"
+        };
+        navigator.clipboard.writeText(mapa[tipo]);
+        alert("Copiado!");
     }
 
-    function copiarTextoMsg(tipo) {
-        let txt = "";
-        const inicio = document.getElementById('hInicio').value;
-        if(tipo === 'fechado') txt = `🌙 *DNB STORE - AVISO*\n\nNossa loja está aberta 24/7 para pagamentos, porém nosso setor de *ENTREGA MANUAL* encerrou as atividades por hoje.\n\nSeu pedido foi registrado e será entregue prioritariamente a partir das *${inicio}:00h*. Agradecemos a preferência!`;
-        if(tipo === 'como') txt = `🎮 *COMO COMPRAR NA DNB STORE*\n\n1. Informe a quantidade de Robux.\n2. Crie uma Gamepass no valor que indicarmos.\n3. Envie o comprovante via PIX.\n4. Nós compramos sua pass e os Robux ficam pendentes na sua conta (3-7 dias).`;
-        if(tipo === 'confirma') txt = `✅ *SUCESSO!*\n\nSeu pedido foi processado. Os Robux já constam como pendentes em sua conta. Obrigado por comprar na DNB Store!`;
-        
-        navigator.clipboard.writeText(txt);
-        alert("Mensagem copiada!");
-    }
-
-    function salvarVenda() {
-        const qtd = document.getElementById('qtdRobux').value;
-        const cli = document.getElementById('nomeCliente').value || "Cliente";
-        if(!qtd) return alert("Quantidade vazia!");
-        
-        const vU = parseFloat(document.getElementById('confVenda').value);
-        const vT = (qtd * vU).toFixed(2);
-        const prot = "DNB-" + Math.floor(Math.random() * 999999);
-
-        const txt = `💎 *DNB STORE - COMPROVANTE*\n\n🆔 *PROT:* ${prot}\n👤 *CLIENTE:* ${cli}\n📦 *PRODUTO:* ${qtd} Robux\n💰 *VALOR:* R$ ${vT}\n✅ *STATUS:* CONCLUÍDO`;
-        navigator.clipboard.writeText(txt);
-        alert("Venda registrada e Recibo copiado!");
-    }
-
-    setInterval(atualizarStatus, 60000);
-    atualizarStatus();
+    // Inicialização
+    atualizarHorario();
+    setInterval(atualizarHorario, 60000);
 </script>
 </body>
 </html>
