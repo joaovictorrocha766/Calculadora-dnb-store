@@ -83,6 +83,7 @@
             <button class="btn btn-primary" onclick="gerarPIX()">📱 GERAR QR CODE PIX</button>
             <div id="areaPix" style="display:none; text-align:center; margin-top:15px;">
                 <div id="qrcode"></div>
+                <button class="btn btn-purple" style="font-size:0.7rem; margin-top:10px;" onclick="copiarChavePix()">📋 COPIAR CHAVE PIX (PIX COPIA E COLA)</button>
             </div>
         </div>
 
@@ -95,8 +96,7 @@
             <button class="btn btn-danger" style="grid-column: span 2; font-size: 0.7rem; margin-top: 10px;" onclick="realizarRetirada()">💸 REALIZAR RETIRADA (ZERAR)</button>
         </div>
 
-        <div class="card log-vendas" id="logVendas">
-            </div>
+        <div class="card log-vendas" id="logVendas"></div>
     </div>
 
     <div id="simulacao" class="content-section">
@@ -146,6 +146,7 @@
         </div>
         <div class="card">
             <h3>🏆 Ranking de Clientes</h3>
+            <input type="text" id="buscaFidelidade" placeholder="🔍 Buscar cliente..." oninput="renderFidelidade()" style="margin-bottom:10px; padding: 10px; font-size: 0.8rem;">
             <table id="tabelaFidelidade">
                 <thead><tr><th>Cliente</th><th>Total</th><th>Pontos</th></tr></thead>
                 <tbody></tbody>
@@ -220,12 +221,11 @@
     function realizarRetirada() {
         const db = JSON.parse(localStorage.getItem('dnb_db')) || [];
         if(db.length === 0) return alert("O caixa já está zerado!");
-        
-        if(confirm("Confirmar retirada de lucros? O saldo em caixa voltará a R$ 0,00, mas o histórico mensal será preservado.")) {
+        if(confirm("Confirmar retirada de lucros?")) {
             const novoDb = db.map(v => ({...v, retirada: true}));
             localStorage.setItem('dnb_db', JSON.stringify(novoDb));
             renderTudo();
-            alert("Retirada realizada com sucesso!");
+            alert("Retirada realizada!");
         }
     }
 
@@ -233,7 +233,6 @@
         const db = JSON.parse(localStorage.getItem('dnb_db')) || [];
         let total = 0;
         db.filter(v => !v.retirada).forEach(v => total += parseFloat(v.lTot));
-        
         document.getElementById('lucroAcumulado').innerText = `R$ ${total.toFixed(2)}`;
         document.getElementById('lEu').innerText = `R$ ${(total/2).toFixed(2)}`;
         document.getElementById('lSocio').innerText = `R$ ${(total/2).toFixed(2)}`;
@@ -267,20 +266,25 @@
         const vU = parseFloat(document.getElementById('cfgVenda').value);
         const cU = parseFloat(document.getElementById('cfgCusto').value);
         const lucro = q * (vU - cU);
-        document.getElementById('sPrecoCli').innerText = `R$ ${(q * vU).toFixed(2)}`;
-        document.getElementById('sLucro').innerText = `R$ ${lucro.toFixed(2)}`;
+        const precoCli = q * vU;
+        const margem = precoCli > 0 ? (lucro / precoCli) : 0;
+
+        const sLucro = document.getElementById('sLucro');
+        sLucro.innerText = `R$ ${lucro.toFixed(2)}`;
+        // Alerta de Lucro Baixo (Vermelho se < 10%)
+        sLucro.style.color = margem < 0.10 ? 'var(--danger)' : 'var(--text)';
+        
+        document.getElementById('sPrecoCli').innerText = `R$ ${precoCli.toFixed(2)}`;
         document.getElementById('sCada').innerText = `R$ ${(lucro/2).toFixed(2)}`;
     }
 
     function copiarMsg(tipo) {
         let t = "";
-        if(tipo === 'tutorial') t = `📖 *COMO COMPRAR NA DNB STORE*\n\n1️⃣ Eu te passo o valor e a quantidade de Robux.\n2️⃣ Você cria uma Gamepass no seu perfil com o valor exato que eu pedir.\n3️⃣ Você me envia o link da Gamepass e faz o PIX.\n4️⃣ Eu compro o item e pronto! O Robux aparece como 'Pendente' no seu saldo e cai em 3-7 dias.`;
-        if(tipo === 'fechado') t = `🌙 *DNB STORE FECHADA*\n\nNo momento estamos offline. Deixe seu pedido que processaremos logo cedo!`;
-        if(tipo === 'pendente') t = `⏳ *AVISO SOBRE PRAZO*\n\nO Roblox demora de 3 a 7 dias para liberar o Robux comprado via Gamepass. É uma regra do próprio jogo!`;
-        if(tipo === 'pix') t = `⏳ *AGUARDANDO PIX*\n\nAssim que enviar o comprovante, realizo a compra dos seus Robux na hora!`;
-        
-        navigator.clipboard.writeText(t);
-        alert("Copiado!");
+        if(tipo === 'tutorial') t = `📖 *COMO COMPRAR NA DNB STORE*\n\n1️⃣ Eu te passo o valor da Gamepass.\n2️⃣ Você cria ela no seu perfil.\n3️⃣ Me envia o link e o comprovante PIX.\n4️⃣ Eu compro e os Robux caem em 3-7 dias (pendente).`;
+        if(tipo === 'fechado') t = `🌙 *DNB STORE FECHADA*`;
+        if(tipo === 'pendente') t = `⏳ *AVISO*: Robux via Gamepass demoram de 3 a 7 dias para liberar.`;
+        if(tipo === 'pix') t = `⏳ *AGUARDANDO PIX* para liberar seu pedido!`;
+        navigator.clipboard.writeText(t); alert("Copiado!");
     }
 
     function renderEstoque() {
@@ -292,11 +296,22 @@
 
     function renderFidelidade() {
         const db = JSON.parse(localStorage.getItem('dnb_db')) || [];
+        const busca = document.getElementById('buscaFidelidade').value.toLowerCase();
         const pts = {};
         db.forEach(v => { const n = v.cli.toLowerCase(); pts[n] = (pts[n] || 0) + parseFloat(v.qtd); });
         const tbody = document.querySelector("#tabelaFidelidade tbody");
         tbody.innerHTML = "";
-        for(let n in pts) tbody.innerHTML += `<tr><td>${n}</td><td>${pts[n]}</td><td style="color:var(--purple)">${Math.floor(pts[n]/1000)} pts</td></tr>`;
+        for(let n in pts) {
+            if(n.includes(busca)) {
+                tbody.innerHTML += `<tr><td>${n}</td><td>${pts[n]}</td><td style="color:var(--purple)">${Math.floor(pts[n]/1000)} pts</td></tr>`;
+            }
+        }
+    }
+
+    function copiarChavePix() {
+        const c = document.getElementById('cfgPix').value;
+        if(!c) return alert("Cadastre a chave nos ajustes!");
+        navigator.clipboard.writeText(c); alert("Chave copiada!");
     }
 
     function atualizarStatus() {
@@ -310,7 +325,7 @@
 
     function gerarPIX() {
         const chave = document.getElementById('cfgPix').value;
-        if(!chave) return alert("Cadastre sua chave PIX nos Ajustes!");
+        if(!chave) return alert("Cadastre a chave!");
         document.getElementById('areaPix').style.display = "block";
         const qr = document.getElementById('qrcode');
         qr.innerHTML = "";
@@ -325,8 +340,8 @@
     function copiarOrcamento() {
         const q = document.getElementById('simQtd').value;
         const v = document.getElementById('sPrecoCli').innerText;
-        navigator.clipboard.writeText(`💎 *DNB STORE - ORÇAMENTO*\n\n📦 *PRODUTO:* ${q} Robux\n💰 *VALOR:* ${v}\n\n✅ *Entrega rápida e garantida!*`);
-        alert("Orçamento copiado!");
+        navigator.clipboard.writeText(`💎 *DNB STORE*\n📦 *${q} Robux*\n💰 *${v}*`);
+        alert("Copiado!");
     }
 
     window.onload = loadCfg;
