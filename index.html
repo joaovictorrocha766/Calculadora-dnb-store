@@ -138,9 +138,24 @@
 
             <button class="btn btn-purple" style="margin-top:15px;" onclick="copiarOrcamento()">📋 COPIAR ORÇAMENTO</button>
         </div>
+
+        <div class="card">
+            <h3>🏷️ Tabela de Preços (Atualizada)</h3>
+            <table id="tabelaPrecos">
+                <thead><tr><th>Qtd</th><th>Preço</th></tr></thead>
+                <tbody></tbody>
+            </table>
+            <button class="btn btn-primary" style="margin-top:10px; font-size:0.7rem;" onclick="copiarTabelaTexto()">📋 COPIAR TABELA PARA WHATSAPP</button>
+        </div>
     </div>
 
     <div id="mensagens" class="content-section">
+        <div class="card">
+            <h3>🚀 Promoção via Discord</h3>
+            <label>Mensagem da Promoção:</label>
+            <input type="text" id="msgPromo" placeholder="Ex: Promoção relâmpago: 1000 Robux por R$ 45!">
+            <button class="btn btn-purple" onclick="enviarWebhook()">📢 ENVIAR PARA DISCORD</button>
+        </div>
         <div class="card">
             <div class="msg-item"><p><strong>📖 Tutorial de Compra</strong></p><button class="btn btn-success" onclick="copiarMsg('tutorial')">Copiar Passo-a-Passo</button></div>
             <div class="msg-item"><p><strong>🌙 Horário Fechado</strong></p><button class="btn btn-primary" onclick="copiarMsg('fechado')">Copiar</button></div>
@@ -162,6 +177,7 @@
     <div id="ajustes" class="content-section">
         <div class="card">
             <h3>⚙️ Configurações</h3>
+            <label>URL Webhook Discord:</label><input type="text" id="cfgWebhook" placeholder="https://discord.com/api/webhooks/..." oninput="saveCfg()">
             <label>Chave PIX:</label><input type="text" id="cfgPix" oninput="saveCfg()">
             <label>Custo (Fornecedor):</label><input type="number" id="cfgCusto" step="0.0001" oninput="saveCfg()">
             <label>Venda (Cliente):</label><input type="number" id="cfgVenda" step="0.0001" oninput="saveCfg()">
@@ -171,6 +187,13 @@
                 <div style="flex:1"><label>Fecha:</label><input type="number" id="cfgFecha" oninput="saveCfg()"></div>
             </div>
         </div>
+        
+        <div class="card">
+            <h3>🕒 Horário de Atendimento</h3>
+            <div id="exibirHorario" style="text-align:center; font-weight:bold; color:var(--primary); background: #0a0f1e; padding:10px; border-radius:8px;"></div>
+            <button class="btn btn-primary" style="margin-top:10px; font-size:0.7rem;" onclick="copiarHorarios()">📋 COPIAR HORÁRIOS</button>
+        </div>
+
         <div class="card">
             <h3>🏆 Ranking de Clientes</h3>
             <input type="text" id="buscaFidelidade" placeholder="🔍 Buscar cliente..." oninput="renderFidelidade()" style="margin-bottom:10px; padding: 10px; font-size: 0.8rem;">
@@ -198,10 +221,12 @@
             abre: document.getElementById('cfgAbre').value || 8,
             fecha: document.getElementById('cfgFecha').value || 22,
             estoque: document.getElementById('cfgEstoque').value || 0,
-            pix: document.getElementById('cfgPix').value || ""
+            pix: document.getElementById('cfgPix').value || "",
+            webhook: document.getElementById('cfgWebhook').value || ""
         };
         localStorage.setItem('dnb_config', JSON.stringify(config));
         atualizarStatus();
+        renderTabelaPrecos();
     }
 
     function loadCfg() {
@@ -212,6 +237,7 @@
         document.getElementById('cfgFecha').value = c.fecha || 22;
         document.getElementById('cfgEstoque').value = c.estoque || 0;
         document.getElementById('cfgPix').value = c.pix || "";
+        document.getElementById('cfgWebhook').value = c.webhook || "";
         renderTudo();
     }
 
@@ -222,24 +248,60 @@
         renderMensal();
         renderLog();
         renderMetas();
+        renderTabelaPrecos();
+        renderHorarioTexto();
+    }
+
+    function renderTabelaPrecos() {
+        const vU = parseFloat(document.getElementById('cfgVenda').value);
+        const tbody = document.querySelector("#tabelaPrecos tbody");
+        const pacotes = [100, 500, 1000, 2000, 5000, 10000];
+        tbody.innerHTML = "";
+        pacotes.forEach(p => {
+            tbody.innerHTML += `<tr><td>${p} R$</td><td>R$ ${(p * vU).toFixed(2)}</td></tr>`;
+        });
+    }
+
+    function renderHorarioTexto() {
+        const a = document.getElementById('cfgAbre').value;
+        const f = document.getElementById('cfgFecha').value;
+        document.getElementById('exibirHorario').innerText = `Segunda a Domingo: ${a}h às ${f}h`;
+    }
+
+    function copiarTabelaTexto() {
+        const vU = parseFloat(document.getElementById('cfgVenda').value);
+        let txt = `💎 *TABELA DNB STORE*\n\n`;
+        [400, 1000, 2000, 5000].forEach(p => {
+            txt += `📦 ${p} Robux: *R$ ${(p * vU).toFixed(2)}*\n`;
+        });
+        txt += `\n🚀 Entrega rápida e segura!`;
+        navigator.clipboard.writeText(txt); alert("Tabela copiada!");
+    }
+
+    function enviarWebhook() {
+        const url = document.getElementById('cfgWebhook').value;
+        const msg = document.getElementById('msgPromo').value;
+        if(!url) return alert("Configure a URL do Webhook nos Ajustes!");
+        if(!msg) return alert("Digite uma mensagem!");
+
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: `📢 **DNB STORE AVISA:**\n${msg}` })
+        }).then(() => alert("Enviado para o Discord!")).catch(() => alert("Erro ao enviar!"));
     }
 
     function salvarVenda() {
         const qtd = parseFloat(document.getElementById('qtdRobux').value);
         const cli = document.getElementById('nomeCliente').value || "Cliente";
         let est = parseInt(document.getElementById('cfgEstoque').value);
-
         if(!qtd || qtd > est) return alert("Sem estoque ou valor inválido!");
-
         const vU = parseFloat(document.getElementById('cfgVenda').value);
         const cU = parseFloat(document.getElementById('cfgCusto').value);
         const lTot = (qtd * (vU - cU)).toFixed(2);
-        
         const db = JSON.parse(localStorage.getItem('dnb_db')) || [];
-        // Adicionado 'entregue: false' para o novo sistema
         db.unshift({ cli, qtd, lTot, date: new Date().toISOString(), retirada: false, entregue: false });
         localStorage.setItem('dnb_db', JSON.stringify(db));
-
         document.getElementById('cfgEstoque').value = est - qtd;
         saveCfg();
         document.getElementById('qtdRobux').value = "";
@@ -259,10 +321,7 @@
     function renderMetas() {
         const db = JSON.parse(localStorage.getItem('dnb_db')) || [];
         const hoje = new Date().toLocaleDateString();
-        let lucroHoje = 0;
-        let robuxHoje = 0;
-        let robuxTotal = 0;
-
+        let lucroHoje = 0, robuxHoje = 0, robuxTotal = 0;
         db.forEach(v => {
             robuxTotal += parseFloat(v.qtd);
             if(new Date(v.date).toLocaleDateString() === hoje) {
@@ -270,13 +329,10 @@
                 robuxHoje += parseFloat(v.qtd);
             }
         });
-
         const meta = 50.00;
         const porc = Math.min((lucroHoje / meta) * 100, 100);
         document.getElementById('txtMeta').innerText = `R$ ${lucroHoje.toFixed(2)} / R$ ${meta.toFixed(2)}`;
         document.getElementById('barraMeta').style.width = porc + "%";
-        
-        // Atualiza estatísticas de volume de Robux
         document.getElementById('robuxHoje').innerText = robuxHoje.toLocaleString() + " R$";
         document.getElementById('robuxTotal').innerText = robuxTotal.toLocaleString() + " R$";
     }
@@ -285,18 +341,10 @@
         const db = JSON.parse(localStorage.getItem('dnb_db')) || [];
         const log = document.getElementById('logVendas');
         log.innerHTML = "<strong>Últimas Vendas & Status:</strong>";
-        
         db.slice(0, 8).forEach((v, index) => {
             const statusIcon = v.entregue ? "✅" : "⏳";
             const statusColor = v.entregue ? "var(--success)" : "var(--warning)";
-            
-            log.innerHTML += `
-                <div class="log-item">
-                    <span>${v.cli} (${v.qtd} R$)</span>
-                    <span onclick="alternarEntrega(${index})" style="cursor:pointer; color:${statusColor}; font-weight:bold; font-size:0.6rem; border:1px solid ${statusColor}; padding:2px 5px; border-radius:4px;">
-                        ${statusIcon} ${v.entregue ? 'ENTREGUE' : 'PENDENTE'}
-                    </span>
-                </div>`;
+            log.innerHTML += `<div class="log-item"><span>${v.cli} (${v.qtd} R$)</span><span onclick="alternarEntrega(${index})" style="cursor:pointer; color:${statusColor}; font-weight:bold; font-size:0.6rem; border:1px solid ${statusColor}; padding:2px 5px; border-radius:4px;">${statusIcon} ${v.entregue ? 'ENTREGUE' : 'PENDENTE'}</span></div>`;
         });
     }
 
@@ -311,28 +359,19 @@
         const q = parseFloat(document.getElementById('simQtd').value) || 0;
         const vU = parseFloat(document.getElementById('cfgVenda').value);
         const cU = parseFloat(document.getElementById('cfgCusto').value);
-        
         const precoCli = q * vU;
         const lucro = q * (vU - cU);
-        const margem = precoCli > 0 ? (lucro / precoCli) : 0;
-
         document.getElementById('sPrecoCli').innerText = `R$ ${precoCli.toFixed(2)}`;
-        const sLucro = document.getElementById('sLucro');
-        sLucro.innerText = `R$ ${lucro.toFixed(2)}`;
-        sLucro.style.color = margem < 0.10 ? 'var(--danger)' : 'var(--text)';
+        document.getElementById('sLucro').innerText = `R$ ${lucro.toFixed(2)}`;
         document.getElementById('sCada').innerText = `R$ ${(lucro/2).toFixed(2)}`;
-
         const proximoRedondo = Math.ceil(precoCli);
         const trocoCentavos = proximoRedondo - precoCli;
         const robuxBonus = Math.floor(trocoCentavos / vU);
-
         const areaTroco = document.getElementById('areaTroco');
         if (robuxBonus >= 50) {
             areaTroco.style.display = "block";
             document.getElementById('txtTroco').innerText = `Pague R$ ${proximoRedondo.toFixed(2)} e leve +${robuxBonus} Robux!`;
-        } else {
-            areaTroco.style.display = "none";
-        }
+        } else { areaTroco.style.display = "none"; }
     }
 
     function renderMensal() {
@@ -373,9 +412,7 @@
         const tbody = document.querySelector("#tabelaFidelidade tbody");
         tbody.innerHTML = "";
         for(let n in pts) {
-            if(n.includes(busca)) {
-                tbody.innerHTML += `<tr><td>${n}</td><td>${pts[n]}</td><td style="color:var(--purple)">${Math.floor(pts[n]/1000)} pts</td></tr>`;
-            }
+            if(n.includes(busca)) tbody.innerHTML += `<tr><td>${n}</td><td>${pts[n]}</td><td style="color:var(--purple)">${Math.floor(pts[n]/1000)} pts</td></tr>`;
         }
     }
 
@@ -385,8 +422,7 @@
         if(confirm("Confirmar retirada de lucros?")) {
             const novoDb = db.map(v => ({...v, retirada: true}));
             localStorage.setItem('dnb_db', JSON.stringify(novoDb));
-            renderTudo();
-            alert("Retirada realizada!");
+            renderTudo(); alert("Retirada realizada!");
         }
     }
 
@@ -424,6 +460,13 @@
         const v = document.getElementById('sPrecoCli').innerText;
         navigator.clipboard.writeText(`💎 *DNB STORE*\n📦 *${q} Robux*\n💰 *${v}*`);
         alert("Copiado!");
+    }
+
+    function copiarHorarios() {
+        const a = document.getElementById('cfgAbre').value;
+        const f = document.getElementById('cfgFecha').value;
+        navigator.clipboard.writeText(`🕒 *HORÁRIO DE ATENDIMENTO - DNB STORE*\n\nSegunda a Domingo: ${a}h às ${f}h`);
+        alert("Horários copiados!");
     }
 
     window.onload = loadCfg;
