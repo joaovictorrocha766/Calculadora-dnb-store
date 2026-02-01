@@ -53,6 +53,11 @@
 
         .log-vendas { max-height: 150px; overflow-y: auto; margin-top: 10px; border-top: 1px solid #2d3748; padding-top: 10px; }
         .log-item { font-size: 0.7rem; padding: 5px 0; display: flex; justify-content: space-between; border-bottom: 1px solid #1e293b; }
+
+        /* Estilo da Barra de Metas */
+        .meta-container { margin-bottom: 15px; background: #1e293b; padding: 12px; border-radius: 12px; border: 1px solid #334155; }
+        .meta-track { background: #0a0f1e; height: 8px; border-radius: 4px; overflow: hidden; margin-top: 8px; }
+        .meta-bar { background: var(--success); height: 100%; width: 0%; transition: width 0.5s ease; }
     </style>
 </head>
 <body>
@@ -72,6 +77,14 @@
     </div>
 
     <div id="vendas" class="content-section active">
+        <div class="meta-container">
+            <div style="display:flex; justify-content:space-between; font-size:0.7rem; font-weight:bold;">
+                <span>🎯 META DIÁRIA (LUCRO)</span>
+                <span id="txtMeta">R$ 0,00 / R$ 50,00</span>
+            </div>
+            <div class="meta-track"><div id="barraMeta" class="meta-bar"></div></div>
+        </div>
+
         <div id="bannerEstoque" class="estoque-banner estoque-ok">Saldo no Fornecedor: 0 Robux</div>
         <div class="card">
             <label>Cliente (@)</label>
@@ -109,6 +122,13 @@
                 <p>Lucro Total: <span id="sLucro" style="float:right">R$ 0,00</span></p>
                 <p>Cada Sócio: <span id="sCada" style="float:right; color:var(--primary)">R$ 0,00</span></p>
             </div>
+            
+            <div id="areaTroco" style="margin-top:15px; padding:10px; border: 1px dashed var(--purple); border-radius:10px; display:none;">
+                <label style="color:var(--purple); font-weight:bold;">🎁 BÔNUS DE FIDELIDADE (TROCO)</label>
+                <p style="font-size:0.75rem; margin:5px 0;">Se o cliente pagar valor redondo, ele pode ganhar:</p>
+                <div id="txtTroco" style="font-weight:bold; color:var(--success); text-align:center;"></div>
+            </div>
+
             <button class="btn btn-purple" style="margin-top:15px;" onclick="copiarOrcamento()">📋 COPIAR ORÇAMENTO</button>
         </div>
     </div>
@@ -194,6 +214,7 @@
         renderEstoque();
         renderMensal();
         renderLog();
+        renderMetas();
     }
 
     function salvarVenda() {
@@ -218,17 +239,6 @@
         alert("Venda salva!");
     }
 
-    function realizarRetirada() {
-        const db = JSON.parse(localStorage.getItem('dnb_db')) || [];
-        if(db.length === 0) return alert("O caixa já está zerado!");
-        if(confirm("Confirmar retirada de lucros?")) {
-            const novoDb = db.map(v => ({...v, retirada: true}));
-            localStorage.setItem('dnb_db', JSON.stringify(novoDb));
-            renderTudo();
-            alert("Retirada realizada!");
-        }
-    }
-
     function renderFinancas() {
         const db = JSON.parse(localStorage.getItem('dnb_db')) || [];
         let total = 0;
@@ -236,6 +246,50 @@
         document.getElementById('lucroAcumulado').innerText = `R$ ${total.toFixed(2)}`;
         document.getElementById('lEu').innerText = `R$ ${(total/2).toFixed(2)}`;
         document.getElementById('lSocio').innerText = `R$ ${(total/2).toFixed(2)}`;
+    }
+
+    function renderMetas() {
+        const db = JSON.parse(localStorage.getItem('dnb_db')) || [];
+        const hoje = new Date().toLocaleDateString();
+        let lucroHoje = 0;
+        db.forEach(v => {
+            if(new Date(v.date).toLocaleDateString() === hoje) {
+                lucroHoje += parseFloat(v.lTot);
+            }
+        });
+        const meta = 50.00;
+        const porc = Math.min((lucroHoje / meta) * 100, 100);
+        document.getElementById('txtMeta').innerText = `R$ ${lucroHoje.toFixed(2)} / R$ ${meta.toFixed(2)}`;
+        document.getElementById('barraMeta').style.width = porc + "%";
+    }
+
+    function realizarSimulacao() {
+        const q = parseFloat(document.getElementById('simQtd').value) || 0;
+        const vU = parseFloat(document.getElementById('cfgVenda').value);
+        const cU = parseFloat(document.getElementById('cfgCusto').value);
+        
+        const precoCli = q * vU;
+        const lucro = q * (vU - cU);
+        const margem = precoCli > 0 ? (lucro / precoCli) : 0;
+
+        document.getElementById('sPrecoCli').innerText = `R$ ${precoCli.toFixed(2)}`;
+        const sLucro = document.getElementById('sLucro');
+        sLucro.innerText = `R$ ${lucro.toFixed(2)}`;
+        sLucro.style.color = margem < 0.10 ? 'var(--danger)' : 'var(--text)';
+        document.getElementById('sCada').innerText = `R$ ${(lucro/2).toFixed(2)}`;
+
+        // Calculadora de Troco em Robux (Bônus)
+        const proximoRedondo = Math.ceil(precoCli);
+        const trocoCentavos = proximoRedondo - precoCli;
+        const robuxBonus = Math.floor(trocoCentavos / vU);
+
+        const areaTroco = document.getElementById('areaTroco');
+        if (robuxBonus >= 50) {
+            areaTroco.style.display = "block";
+            document.getElementById('txtTroco').innerText = `Pague R$ ${proximoRedondo.toFixed(2)} e leve +${robuxBonus} Robux!`;
+        } else {
+            areaTroco.style.display = "none";
+        }
     }
 
     function renderLog() {
@@ -259,23 +313,6 @@
         const tbody = document.querySelector("#tabelaMensal tbody");
         tbody.innerHTML = "";
         for(let k in mensal) tbody.innerHTML += `<tr><td>${k}</td><td>${mensal[k].q}</td><td>R$ ${mensal[k].l.toFixed(2)}</td></tr>`;
-    }
-
-    function realizarSimulacao() {
-        const q = parseFloat(document.getElementById('simQtd').value) || 0;
-        const vU = parseFloat(document.getElementById('cfgVenda').value);
-        const cU = parseFloat(document.getElementById('cfgCusto').value);
-        const lucro = q * (vU - cU);
-        const precoCli = q * vU;
-        const margem = precoCli > 0 ? (lucro / precoCli) : 0;
-
-        const sLucro = document.getElementById('sLucro');
-        sLucro.innerText = `R$ ${lucro.toFixed(2)}`;
-        // Alerta de Lucro Baixo (Vermelho se < 10%)
-        sLucro.style.color = margem < 0.10 ? 'var(--danger)' : 'var(--text)';
-        
-        document.getElementById('sPrecoCli').innerText = `R$ ${precoCli.toFixed(2)}`;
-        document.getElementById('sCada').innerText = `R$ ${(lucro/2).toFixed(2)}`;
     }
 
     function copiarMsg(tipo) {
@@ -305,6 +342,17 @@
             if(n.includes(busca)) {
                 tbody.innerHTML += `<tr><td>${n}</td><td>${pts[n]}</td><td style="color:var(--purple)">${Math.floor(pts[n]/1000)} pts</td></tr>`;
             }
+        }
+    }
+
+    function realizarRetirada() {
+        const db = JSON.parse(localStorage.getItem('dnb_db')) || [];
+        if(db.length === 0) return alert("O caixa já está zerado!");
+        if(confirm("Confirmar retirada de lucros?")) {
+            const novoDb = db.map(v => ({...v, retirada: true}));
+            localStorage.setItem('dnb_db', JSON.stringify(novoDb));
+            renderTudo();
+            alert("Retirada realizada!");
         }
     }
 
